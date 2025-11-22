@@ -4,7 +4,7 @@ services:
     build:
       context: ..
       dockerfile: tests/Dockerfile
-    image: <MODULE_NAME>-test:latest
+    image: pytest-repeated-test:latest
     command: pytest
     volumes:
       - ../tests:/app/tests
