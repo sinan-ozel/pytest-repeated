@@ -59,9 +59,7 @@ def pytest_runtest_makereport(item, call):
 
 
 def pytest_report_teststatus(report, config):
-    """
-    Customize terminal output for repeated tests.
-    """
+    """Customize terminal output for repeated tests."""
     if hasattr(report, "_repeated_summary") and report.when == "call":
         passes, total = report._repeated_summary
 

@@ -1,4 +1,5 @@
-"""pytest-repeated plugin for running tests multiple times with threshold-based passing."""
+"""Pytest-repeated plugin for running tests multiple times with
+threshold-based passing."""
 
 __version__ = "0.1.0"
 

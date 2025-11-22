@@ -38,7 +38,20 @@ jobs:
         run: |
           ls -al .
           ls -al src/
-          docformatter --in-place --recursive --wrap-summaries 72 --wrap-descriptions 72 src/
+          docformatter \
+            --check \
+            --recursive \
+            --wrap-summaries 72 \
+            --wrap-descriptions 72 \
+            --exclude src/**/*.egg-info
+            src/
+          docformatter \
+            --in-place \
+            --recursive \
+            --wrap-summaries 72 \
+            --wrap-descriptions 72 \
+            --exclude src/**/*.egg-info
+            src/
 
       - name: Run isort
         run: |
