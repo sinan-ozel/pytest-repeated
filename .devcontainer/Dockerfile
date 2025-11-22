@@ -11,9 +11,10 @@ RUN apt-get install -y vim
 RUN rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml .
-COPY src/ .
+COPY src/ ./src/
+COPY tests/ ./tests/
 
 # Install Python dependencies
 RUN pip install --upgrade pip
-RUN pip install .[test]
+RUN pip install -e .[test]
 RUN pip install -e .[dev]
