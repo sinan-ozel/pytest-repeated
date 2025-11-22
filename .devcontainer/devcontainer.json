@@ -1,0 +1,26 @@
+{
+  "name": "PyPI Module Development Container",
+  "dockerComposeFile": [
+    "docker-compose.yaml"
+  ],
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached,readonly",
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached,readonly"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "stkb.rewrap"
+      ]
+    }
+  },
+  "remoteUser": "root"
+}

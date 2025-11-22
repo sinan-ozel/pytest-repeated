@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  test:
+    build:
+      context: ..
+      dockerfile: tests/Dockerfile
+    image: <MODULE_NAME>-test:latest
+    command: pytest
+    volumes:
+      - ../tests:/app/tests
+
