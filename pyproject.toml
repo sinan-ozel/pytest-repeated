@@ -17,7 +17,8 @@ dependencies = [
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent"
+    "Operating System :: OS Independent",
+    "Framework :: Pytest",
 ]
 
 [project.optional-dependencies]
@@ -51,6 +52,9 @@ dedent_closing_brackets = false
 
 [tool.setuptools.dynamic]
 version = { attr = "pytest_repeated.__version__" }
+
+[project.entry-points.pytest11]
+repeated = "pytest_repeated.plugin"
 
 [project.urls]
 Homepage = "https://github.com/sinan-ozel/pytest-repeated"

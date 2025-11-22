@@ -1,7 +1,9 @@
 import os
 import shutil
 import tempfile
+import subprocess
 from pathlib import Path
+
 import pytest
 
 
@@ -49,12 +51,15 @@ def test_flaky():
         env = os.environ.copy()
         env["PYTHONPATH"] = temp_dir + os.pathsep + env.get("PYTHONPATH", "")
 
-        # Run pytest and explicitly load plugin module
-        result = pytest.main(
-            [
-                str(tmp),
-                "-q",
-                "-p", "pytest_repeated.plugin",   # load plugin
-            ]
+        proc = subprocess.run(
+            ["pytest", "-v", str(test_file)],
+            capture_output=True,
+            text=True,
+            env=env,
         )
-        assert result == 0, "Flaky test should succeed with threshold logic"
+
+        stdout = proc.stdout
+        assert proc.returncode == 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+
+        # verify message like "3 out of 5"
+        assert "(5/5)" in stdout or "(5/5)" in proc.stderr, stdout

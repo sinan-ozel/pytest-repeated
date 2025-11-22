@@ -1,46 +1,76 @@
-"""
-pytest-mark ‘repeated’: run a test N times and pass if threshold of passes is met.
-"""
-
 import pytest
 
+
 def pytest_configure(config):
-    config.addinivalue_line(
-        "markers",
+    config.addinivalue_line("markers",
         "repeated(times, threshold): run a test multiple times and pass if threshold met"
     )
+
 
 def pytest_runtest_call(item):
     marker = item.get_closest_marker("repeated")
     if marker is None:
-        return
+        return  # run normally
 
     times = marker.kwargs.get("times", 1)
     threshold = marker.kwargs.get("threshold", 1)
 
+    # Collect results
     passes = 0
-    last_exc = None
+    last_exception = None
 
-    for _ in range(times):
+    for i in range(times):
         try:
-            item.runtest()
+            item.runtest()   # run the actual test function
         except Exception as e:
-            last_exc = e
+            last_exception = e
         else:
             passes += 1
 
+    # Store summary for the report stage
     item._repeated_summary = (passes, times)
 
-    if passes >= threshold:
-        return
-    raise last_exc
+    # Determine final result
+    if passes < threshold:
+        raise last_exception
 
+
+@pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    report = pytest.TestReport.from_item_and_call(item, call)
+    outcome = yield
+    report = outcome.get_result()
+
     if hasattr(item, "_repeated_summary") and report.when == "call":
         passes, total = item._repeated_summary
-        if report.passed:
-            report.shortrepr = f"PASSED ({passes}/{total})"
+        msg = f"{passes} out of {total} runs passed"
+
+        # append section visible under -vv
+        report.sections.append(("repeated", msg))
+
+        # make outcome text shorter in summary line
+        if passes == total:
+            report.shortrepr = f"({passes}/{total})"
         else:
-            report.shortrepr = f"FAILED ({passes}/{total})"
+            report.shortrepr = f"({passes}/{total})"
+
+        report._repeated_summary = (passes, total)
+
     return report
+
+
+def pytest_report_teststatus(report, config):
+    """
+    Customize terminal output for repeated tests.
+    """
+    if hasattr(report, "_repeated_summary") and report.when == "call":
+        passes, total = report._repeated_summary
+
+        # short progress character: use '+' for full pass, '.' otherwise
+        short = "+" if passes == total else "."
+
+        # verbose string shown in -v/-vv
+        verbose = f"PASSED ({passes}/{total})" if report.passed else f"FAILED ({passes}/{total})"
+
+        # Return correct tuple shape
+        return (report.outcome, short, verbose)
+    return None  # use default
