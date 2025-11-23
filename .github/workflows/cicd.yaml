@@ -205,15 +205,12 @@ jobs:
             echo "Error: CURRENT_VERSION ($CURRENT_VERSION) is not greater than or equal to LAST_TAG ($LAST_TAG)"
             exit 1
           fi
-          echo v$CURRENT_VERSION
-          echo $LAST_TAG
 
           TAG_COUNT=$(git tag | wc -l)
           echo "TAG_COUNT=$TAG_COUNT"
           if [[ "v$CURRENT_VERSION" != "$LAST_TAG" || "$TAG_COUNT" -eq 0 ]]; then
-            echo "Current version is greater than last tag or no tags exist, proceeding to set version."
+            echo "Current version (v$CURRENT_VERSION) is greater than last tag ($LAST_TAG) or no tags exist: stable release."
             echo "VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
-            echo "is_stable=true" >> $GITHUB_ENV
             echo "is_stable=true" >> $GITHUB_OUTPUT
           else
             # Increment minor version for dev version
@@ -224,7 +221,6 @@ jobs:
             NEXT_MINOR=$((MINOR + 1))
             DEV_VERSION="${MAJOR}.${NEXT_MINOR}.0.dev$(date +%Y%m%d%H%M)"
             echo "VERSION=$DEV_VERSION" >> $GITHUB_ENV
-            echo "is_stable=false" >> $GITHUB_ENV
             echo "is_stable=false" >> $GITHUB_OUTPUT
           fi
 
@@ -246,7 +242,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Tag Stable Release
-        if: env.is_stable == 'true'
+        if: steps.set-version.outputs.is_stable == 'true'
         run: |
             git tag "v${VERSION}"
             git push origin "v${VERSION}"
