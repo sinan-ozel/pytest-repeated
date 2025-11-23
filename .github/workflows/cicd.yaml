@@ -203,6 +203,8 @@ jobs:
             echo "Error: CURRENT_VERSION ($CURRENT_VERSION) is not greater than or equal to LAST_TAG ($LAST_TAG)"
             exit 1
           fi
+          echo v$CURRENT_VERSION
+          echo $LAST_TAG
 
           TAG_COUNT=$(git tag | wc -l)
           if [[ "v$CURRENT_VERSION" != "$LAST_TAG" || "$TAG_COUNT" -eq 0 ]]; then
