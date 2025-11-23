@@ -225,6 +225,7 @@ jobs:
           echo $LAST_TAG
 
           TAG_COUNT=$(git tag | wc -l)
+          echo "TAG_COUNT=$TAG_COUNT"
           if [[ "v$CURRENT_VERSION" != "$LAST_TAG" || "$TAG_COUNT" -eq 0 ]]; then
             echo "Current version is greater than last tag or no tags exist, proceeding to set version."
             echo "VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
