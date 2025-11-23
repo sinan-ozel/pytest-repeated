@@ -1,4 +1,4 @@
-![Tests & Lint](https://github.com/sinan-ozel/pytest-repeated/actions/workflows/ci.yaml/badge.svg?branch=main)
+![Tests & Lint](https://github.com/sinan-ozel/pytest-repeated/actions/workflows/cicd.yaml/badge.svg?branch=main)
 ![PyPI](https://img.shields.io/pypi/v/pytest-repeated.svg)
 ![PyPI downloads](https://img.shields.io/pypi/dm/pytest-repeated.svg?label=downloads&logo=pypi)
 ![License](https://img.shields.io/github/license/sinan-ozel/pytest-repeated.svg)
