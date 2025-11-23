@@ -43,14 +43,14 @@ jobs:
             --recursive \
             --wrap-summaries 72 \
             --wrap-descriptions 72 \
-            --exclude src/**/*.egg-info
+            --exclude src/**/*.egg-info \
             src/
           docformatter \
             --in-place \
             --recursive \
             --wrap-summaries 72 \
             --wrap-descriptions 72 \
-            --exclude src/**/*.egg-info
+            --exclude src/**/*.egg-info \
             src/
 
       - name: Run isort
