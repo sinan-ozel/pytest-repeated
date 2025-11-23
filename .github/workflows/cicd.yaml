@@ -226,10 +226,13 @@ jobs:
 
           TAG_COUNT=$(git tag | wc -l)
           if [[ "v$CURRENT_VERSION" != "$LAST_TAG" || "$TAG_COUNT" -eq 0 ]]; then
+            echo "Current version is greater than last tag or no tags exist, proceeding to set version."
             echo "VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
             echo "is_stable=true" >> $GITHUB_ENV
+            echo "::set-output name=is_stable::true"
           else
             # Increment minor version for dev version
+            echo "Current version equals last tag, setting development version."
             MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
             MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
             PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
@@ -237,10 +240,11 @@ jobs:
             DEV_VERSION="${MAJOR}.${NEXT_MINOR}.0.dev$(date +%Y%m%d%H%M)"
             echo "VERSION=$DEV_VERSION" >> $GITHUB_ENV
             echo "is_stable=false" >> $GITHUB_ENV
+            echo "::set-output name=is_stable::false"
           fi
 
       - name: Inject Version Into __init__.py
-        if: env.is_stable == 'false'
+        if: steps.set-version.outputs.is_stable == 'false'
         run: |
           sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" src/$MODULE_NAME/__init__.py
           cat src/$MODULE_NAME/__init__.py | grep "__version__"  # Debugging check
