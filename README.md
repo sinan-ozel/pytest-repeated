@@ -1,6 +1,14 @@
+![Tests & Lint](https://github.com/sinan-ozel/pytest-repeated/actions/workflows/ci.yaml/badge.svg?branch=main)
+![PyPI](https://img.shields.io/pypi/v/pytest-repeated.svg)
+![PyPI downloads](https://img.shields.io/pypi/dm/pytest-repeated.svg?label=downloads&logo=pypi)
+![License](https://img.shields.io/github/license/sinan-ozel/pytest-repeated.svg)
+
 # Introduction
 
 Pytest plugin to repeat tests and pass if the test passes a number of times out of a total.
+
+## Purpose
+I want to leverage `pytest` for model evaluation in a way that can be readily incorporated into CI/CD flows.
 
 # Installation
 
@@ -33,3 +41,10 @@ docker compose -f tests/docker-compose.yaml up --build --abort-on-container-exit
 ```
 
 4. When satisfied, push and open a PR. The pipeline will publish automatically when your PR is merged.
+
+# Future Plans
+
+- [ ] Better statistical measures
+- [ ] Optimized testing - stop conditions.
+- [ ] Sequential testing.
+- [ ] Ability to set the seed.
