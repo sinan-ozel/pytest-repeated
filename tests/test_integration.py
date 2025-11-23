@@ -14,12 +14,8 @@ def test_repeated_marker_behavior():
     """
 
     # Locate your actual plugin file
-    plugin_path = (
-        Path(__file__).resolve().parent.parent
-        / "src"
-        / "pytest_repeated"
-        / "plugin.py"
-    )
+    plugin_path = (Path(__file__).resolve().parent.parent / "src" /
+                   "pytest_repeated" / "plugin.py")
     assert plugin_path.exists(), f"Plugin not found: {plugin_path}"
 
     # Create a full isolated test environment
@@ -36,16 +32,14 @@ def test_repeated_marker_behavior():
 
         # Create test file using pytest.mark.repeated
         test_file = tmp / "test_sample.py"
-        test_file.write_text(
-            """
+        test_file.write_text("""
 import pytest
 
 @pytest.mark.repeated(times=5, threshold=2)
 def test_flaky():
     import random
     return random.choice([True, False])
-"""
-        )
+""")
 
         # Add temp directory to PYTHONPATH so pytest can import the plugin
         env = os.environ.copy()
