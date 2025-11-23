@@ -48,3 +48,4 @@ docker compose -f tests/docker-compose.yaml up --build --abort-on-container-exit
 - [ ] Optimized testing - stop conditions.
 - [ ] Sequential testing.
 - [ ] Ability to set the seed.
+- [ ] Report and fail on speed
