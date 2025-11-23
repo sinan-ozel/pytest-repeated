@@ -229,7 +229,7 @@ jobs:
             echo "Current version is greater than last tag or no tags exist, proceeding to set version."
             echo "VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
             echo "is_stable=true" >> $GITHUB_ENV
-            echo "::set-output name=is_stable::true"
+            echo "is_stable=true" >> $GITHUB_OUTPUT
           else
             # Increment minor version for dev version
             echo "Current version equals last tag, setting development version."
@@ -240,7 +240,7 @@ jobs:
             DEV_VERSION="${MAJOR}.${NEXT_MINOR}.0.dev$(date +%Y%m%d%H%M)"
             echo "VERSION=$DEV_VERSION" >> $GITHUB_ENV
             echo "is_stable=false" >> $GITHUB_ENV
-            echo "::set-output name=is_stable::false"
+            echo "is_stable=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Inject Version Into __init__.py
