@@ -221,8 +221,8 @@ jobs:
             MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
             MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
             PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
-            NEXT_MINOR=$((MINOR + 1))
-            DEV_VERSION="${MAJOR}.${NEXT_MINOR}.0.dev$(date +%Y%m%d%H%M)"
+            NEXT_PATCH=$((PATCH + 1))
+            DEV_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}.dev$(date +%Y%m%d%H%M)"
             echo "VERSION=$DEV_VERSION" >> $GITHUB_ENV
             echo "is_stable=false" >> $GITHUB_OUTPUT
           fi
