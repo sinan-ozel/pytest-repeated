@@ -154,3 +154,34 @@ def test_threshold_fail(isolated_env):
     assert "FAILED (1/5)" in stdout or "FAILED (1/5)" in proc.stderr, stdout
 
 
+@pytest.mark.depends(on=['test_repeated_marker_behavior'])
+def test_threshold_met_with_final_failure(isolated_env):
+    """Test that threshold met results in PASSED even if last run fails."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent("""
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=2)
+    def test_flaky():
+        call_count["count"] += 1
+        # Passes on runs 1 and 3, fails on runs 2, 4, 5
+        assert call_count["count"] in [1, 3]
+    """)
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    # Should PASS because 2/5 >= threshold of 2, even though last run failed
+    assert proc.returncode == 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    assert "PASSED (2/5)" in stdout or "PASSED (2/5)" in proc.stderr, stdout
+
+
+
