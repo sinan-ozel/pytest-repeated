@@ -50,10 +50,12 @@ jobs:
             src/
 
       - name: Run isort
+        if: github.ref != 'refs/heads/main'
         run: |
           isort src/
 
       - name: Commit changes
+        if: github.ref != 'refs/heads/main'
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
@@ -61,6 +63,7 @@ jobs:
           git commit -m "Auto reformat code via workflow" || echo "No changes to commit"
 
       - name: Push changes
+        if: github.ref != 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
