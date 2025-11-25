@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pytest_repeated"
 dynamic = ["version"]
-description = ""
+description = "A pytest module for very basic statistical tests. Repeat test multiple times and pass if the underlying test passes a threshold."
 readme = "README.md"
 authors = [
     { name = "Sinan Ozel", email = "coding@sinan.slmail.me" },
