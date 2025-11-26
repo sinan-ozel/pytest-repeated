@@ -78,7 +78,7 @@ def pytest_report_teststatus(report, config):
         short = "+" if passes == total else "."
 
         # verbose string shown in -v/-vv
-        verbose = f"PASSED ({passes}/{total})" if report.passed else f"FAILED ({passes}/{total})"
+        verbose = f"PASSED ({passes}/{total})" if report.outcome == "passed" else f"FAILED ({passes}/{total})"
 
         # Return correct tuple shape
         return (report.outcome, short, verbose)

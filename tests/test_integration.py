@@ -185,3 +185,27 @@ def test_threshold_met_with_final_failure(isolated_env):
 
 
 
+@pytest.mark.depends(on=['test_repeated_marker_behavior'])
+def test_threshold_0_pass(isolated_env):
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent("""
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=0)
+    def test_failing():
+        assert False
+    """)
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    assert proc.returncode == 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    assert "PASSED (0/5)" in stdout or "PASSED (0/5)" in proc.stderr, stdout
