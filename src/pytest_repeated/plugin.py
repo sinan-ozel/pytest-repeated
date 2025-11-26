@@ -111,7 +111,7 @@ def pytest_report_teststatus(report, config):
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_logreport(report):
     """Print detailed run results for -vvv."""
-    outcome = yield
+    _ = yield
     if hasattr(report, "_repeated_summary") and report.when == "call":
         if hasattr(report, "config"):
             config = report.config
