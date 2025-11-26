@@ -10,6 +10,8 @@ Pytest plugin to repeat tests and pass if the test passes a number of times out 
 ## Purpose
 I want to leverage `pytest` for model evaluation in a way that can be readily incorporated into CI/CD flows.
 
+(Also consider giving `pytest-repeat` a look - I wrote `pytest-repeated` for _statistical_ testing, as in, there are situations where one or two failures out of a hundred is acceptable.)
+
 # Installation
 
 ```
