@@ -15,6 +15,7 @@ def test_flaky():
     return random.choice([True, False])
 """
 
+
 @pytest.fixture
 def isolated_env():
     """
@@ -27,10 +28,8 @@ def isolated_env():
     base = Path(temp_dir)
 
     # Locate plugin
-    plugin_path = (
-        Path(__file__).resolve().parent.parent
-        / "src" / "pytest_repeated" / "plugin.py"
-    )
+    plugin_path = (Path(__file__).resolve().parent.parent / "src" /
+                   "pytest_repeated" / "plugin.py")
     assert plugin_path.exists()
 
     # Copy plugin
@@ -182,7 +181,6 @@ def test_threshold_met_with_final_failure(isolated_env):
     # Should PASS because 2/5 >= threshold of 2, even though last run failed
     assert proc.returncode == 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
     assert "PASSED (2/5)" in stdout or "PASSED (2/5)" in proc.stderr, stdout
-
 
 
 @pytest.mark.depends(on=['test_repeated_marker_behavior'])

@@ -1,6 +1,7 @@
 Metadata-Version: 2.4
 Name: pytest_repeated
-Version: 0.1.0
+Version: 0.2.2
+Summary: A pytest module for very basic statistical tests. Repeat test multiple times and pass if the underlying test passes a threshold.
 Author-email: Sinan Ozel <coding@sinan.slmail.me>
 License: MIT License
         
@@ -59,6 +60,8 @@ Pytest plugin to repeat tests and pass if the test passes a number of times out 
 
 ## Purpose
 I want to leverage `pytest` for model evaluation in a way that can be readily incorporated into CI/CD flows.
+
+(Also consider giving `pytest-repeat` a look - I wrote `pytest-repeated` for _statistical_ testing, as in, there are situations where one or two failures out of a hundred is acceptable.)
 
 # Installation
 
