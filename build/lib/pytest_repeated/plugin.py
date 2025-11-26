@@ -48,6 +48,16 @@ def pytest_runtest_makereport(item, call):
         # append section visible under -vv
         report.sections.append(("repeated", msg))
 
+        # Get threshold to determine if test should pass
+        marker = item.get_closest_marker("repeated")
+        threshold = marker.kwargs.get("threshold", 1) if marker else 1
+
+        # Override outcome based on threshold
+        if passes >= threshold:
+            report.outcome = "passed"
+        else:
+            report.outcome = "failed"
+
         # make outcome text shorter in summary line
         if passes == total:
             report.shortrepr = f"({passes}/{total})"
@@ -68,7 +78,7 @@ def pytest_report_teststatus(report, config):
         short = "+" if passes == total else "."
 
         # verbose string shown in -v/-vv
-        verbose = f"PASSED ({passes}/{total})" if report.passed else f"FAILED ({passes}/{total})"
+        verbose = f"PASSED ({passes}/{total})" if report.outcome == "passed" else f"FAILED ({passes}/{total})"
 
         # Return correct tuple shape
         return (report.outcome, short, verbose)
