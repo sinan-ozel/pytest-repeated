@@ -61,9 +61,12 @@ def pytest_runtest_makereport(item, call):
                     if status == "PASS":
                         details_lines.append(f"  Run {run_num}: {status}")
                     else:
-                        error_preview = error[:80] + "..." if error and len(error) > 80 else error
-                        details_lines.append(f"  Run {run_num}: {status} - {error_preview}")
-                report.sections.append(("repeated details", "\n".join(details_lines)))
+                        error_preview = error[:80] + "..." if error and len(
+                            error) > 80 else error
+                        details_lines.append(
+                            f"  Run {run_num}: {status} - {error_preview}")
+                report.sections.append(
+                    ("repeated details", "\n".join(details_lines)))
 
         # Get threshold to determine if test should pass
         marker = item.get_closest_marker("repeated")
@@ -122,5 +125,6 @@ def pytest_runtest_logreport(report):
                     if status == "PASS":
                         tw.line(f"  Run {run_num}: {status}")
                     else:
-                        error_preview = error[:80] + "..." if error and len(error) > 80 else error
+                        error_preview = error[:80] + "..." if error and len(
+                            error) > 80 else error
                         tw.line(f"  Run {run_num}: {status} - {error_preview}")
