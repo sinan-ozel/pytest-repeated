@@ -207,3 +207,33 @@ def test_threshold_0_pass(isolated_env):
     stdout = proc.stdout
     assert proc.returncode == 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
     assert "PASSED (0/5)" in stdout or "PASSED (0/5)" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=['test_repeated_marker_behavior'])
+def test_threshold_with_verbosity_level_3(isolated_env):
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent("""
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=2)
+    def test_flaky():
+        call_count["count"] += 1
+        # Passes on runs 1 and 3, fails on runs 2, 4, 5
+        assert call_count["count"] in [1, 3]
+    """)
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-vvv", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    assert "PASSED (2/5)" in stdout or "PASSED (2/5)" in proc.stderr, stdout
+    assert "Run-by-run results:" in stdout or "Run-by-run results:" in proc.stderr, stdout
