@@ -6,6 +6,5 @@ services:
       dockerfile: tests/Dockerfile
     image: pytest-repeated-test:latest
     command: pytest
-    volumes:
-      - ../tests:/app/tests
+    working_dir: /app
 

@@ -4,8 +4,8 @@ WORKDIR /app
 
 # Copy pyproject.toml from the parent directory
 COPY pyproject.toml .
-COPY src/pytest_repeated ./pytest_repeated
 COPY src/pytest_repeated ./src/pytest_repeated
+COPY tests ./tests
 
 RUN pip install --upgrade pip
 RUN pip install .           # Install main project dependencies
