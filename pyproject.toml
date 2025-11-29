@@ -33,7 +33,7 @@ test = [
 dev = [
     "isort>=5.12.0",          # For import sorting
     "ruff>=0.12.11",          # For linting
-    "yapf>=0.40.0",           # For code formatting (YAPF)
+    "black>=24.0.0",          # For code formatting (Black)
     "docformatter>=1.7.5",    # For formatting docstrings
 ]
 
@@ -44,11 +44,22 @@ publish = [
 [tool.ruff]
 line-length = 80
 
-[tool.yapf]
-based_on_style = "pep8"
-column_limit = 80
-split_before_first_argument = false
-dedent_closing_brackets = false
+[tool.ruff.lint]
+# Allow Unicode identifiers (e.g., Greek letters for statistical formulas)
+allowed-confusables = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", "Δ", "Σ", "Φ", "Ψ", "Ω"]
+
+[tool.ruff.lint.per-file-ignores]
+# Disable RUF001 (ambiguous unicode character) for files with mathematical formulas
+"**/plugin.py" = ["RUF001"]
+"**/test_*.py" = ["RUF001"]
+
+[tool.black]
+line-length = 80
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 80
 
 [tool.setuptools.dynamic]
 version = { attr = "pytest_repeated.__version__" }

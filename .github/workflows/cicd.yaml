@@ -33,9 +33,9 @@ jobs:
           pip install --upgrade pip
           pip install .[dev]
 
-      - name: Run YAPF
+      - name: Run Black
         run: |
-          yapf --style=pyproject.toml -r -i .
+          black .
 
       - name: Run docformatter
         run: |
