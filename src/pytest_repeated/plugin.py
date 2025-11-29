@@ -18,7 +18,7 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         alpha (float): significance level for the test (default 0.05)
 
     Returns:
-        dict: {"p_value": float, "reject": bool, "p̂": float, "method": str}
+        dict: {"p_value": float, "reject": bool, "p_hat": float, "method": str}
 
     Raises:
         ValueError: if input parameters are out of bounds
@@ -31,7 +31,7 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         raise ValueError("N must be > 0")
 
     # Observed proportion
-    p̂ = n / N
+    p_hat = n / N
 
     # Handle edge cases for r = 0 or r = 1
     if r == 0:
@@ -39,7 +39,7 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         return {
             "p_value": 0.0 if n > 0 else 1.0,
             "reject": (n > 0),
-            "p̂": p̂,
+            "p_hat": p_hat,
             "method": "exact",
         }
     if r == 1:
@@ -47,7 +47,7 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         return {
             "p_value": 1.0 if n < N else 0.0,
             "reject": False,
-            "p̂": p̂,
+            "p_hat": p_hat,
             "method": "exact",
         }
 
@@ -83,7 +83,7 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         return {
             "p_value": p_value,
             "reject": p_value < alpha,
-            "p̂": p̂,
+            "p_hat": p_hat,
             "method": "exact_binomial",
         }
     else:
@@ -102,7 +102,7 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         return {
             "p_value": p_value,
             "reject": p_value < alpha,
-            "p̂": p̂,
+            "p_hat": p_hat,
             "method": "normal_approximation",
         }
 
