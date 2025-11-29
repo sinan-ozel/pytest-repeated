@@ -1,5 +1,6 @@
-import pytest
 import math
+
+import pytest
 
 
 def one_sided_proportion_test(r, n, N, alpha=0.05):
@@ -60,22 +61,19 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         # = sum_{k=n}^{N} C(N,k) * r^k * (1-r)^(N-k)
 
         # Use log probabilities to avoid overflow
-        from math import comb, log, exp
+        from math import comb, exp, log
 
         # Compute log(P(X = k)) for k from n to N
         log_probs = []
         for k in range(n, N + 1):
             # log(C(N,k) * r^k * (1-r)^(N-k))
-            log_prob = (
-                log(comb(N, k)) +
-                k * log(r) +
-                (N - k) * log(1 - r)
-            )
+            log_prob = (log(comb(N, k)) + k * log(r) + (N - k) * log(1 - r))
             log_probs.append(log_prob)
 
         # Use log-sum-exp trick for numerical stability
         max_log_prob = max(log_probs)
-        p_value = sum(exp(lp - max_log_prob) for lp in log_probs) * exp(max_log_prob)
+        p_value = sum(exp(lp - max_log_prob)
+                      for lp in log_probs) * exp(max_log_prob)
 
         # Clamp to [0, 1] due to numerical errors
         p_value = max(0.0, min(1.0, p_value))
@@ -140,8 +138,7 @@ def pytest_runtest_call(item):
             f"Statistical test (H0={null}) requires multiple trials. "
             f"Set times > 1 (currently times={times}).",
             UserWarning,
-            stacklevel=2
-        )
+            stacklevel=2)
 
     # Collect results
     passes = 0
@@ -207,8 +204,10 @@ def pytest_runtest_makereport(item, call):
 
         if null is not None:
             # Use statistical test to determine pass/fail
-            test_result = one_sided_proportion_test(
-                r=null, n=passes, N=total, alpha=1 - ci)
+            test_result = one_sided_proportion_test(r=null,
+                                                    n=passes,
+                                                    N=total,
+                                                    alpha=1 - ci)
             p_value = test_result["p_value"]
             if test_result["reject"]:
                 report.outcome = "passed"
@@ -227,8 +226,7 @@ def pytest_runtest_makereport(item, call):
                     f"Using {method} test with N={total}. "
                     f"For more reliable results, consider N >= 30.",
                     UserWarning,
-                    stacklevel=2
-                )
+                    stacklevel=2)
         else:
             # Override outcome based on threshold
             if passes >= threshold:
