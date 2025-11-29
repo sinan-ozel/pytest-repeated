@@ -38,6 +38,10 @@ def isolated_env():
     shutil.copy(plugin_path, pkg_dir / "plugin.py")
     (pkg_dir / "__init__.py").write_text("")
 
+    # Create conftest.py to register the plugin
+    conftest_content = "pytest_plugins = ['pytest_repeated.plugin']\n"
+    (base / "conftest.py").write_text(conftest_content)
+
     # Build environment
     env = os.environ.copy()
     env["PYTHONPATH"] = str(base) + os.pathsep + env.get("PYTHONPATH", "")
@@ -302,3 +306,96 @@ def test_threshold_fail_with_error_verbosity_level_3(isolated_env):
     assert "'incorrect_key'" in stdout or "'incorrect_key'" in proc.stderr, stdout
     assert "KeyError" in stdout or "KeyError" in proc.stderr, stdout
     assert "Run-by-run results:" in stdout or "Run-by-run results:" in proc.stderr, stdout
+
+
+def test_z_test(isolated_env):
+    """Test statistical hypothesis testing with H0 parameter."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent("""
+    import pytest
+    @pytest.mark.repeated(H0=0.9, ci=0.95, times=3)
+    def test_always_passes():
+        assert True
+    """)
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    # With 3/3 passes and H0=0.9, p-value will be ~0.28, which fails to reject H0
+    # so the test should FAIL
+    assert proc.returncode != 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    # Should show p-value in output
+    assert "(p=" in stdout or "(p=" in proc.stderr, stdout
+    # Should have warnings about exact binomial test usage
+    assert "exact_binomial" in stdout or "exact_binomial" in proc.stderr, stdout
+
+
+def test_threshold_pass_equal(isolated_env):
+    """Test statistical hypothesis testing with H0 parameter."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent("""
+    import pytest
+    @pytest.mark.repeated(H0=0.9, ci=0.95, n=3)
+    def test_always_passes():
+        assert True
+    """)
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    # With 3/3 passes and H0=0.9, p-value will be ~0.28, which fails to reject H0
+    # so the test should FAIL
+    assert proc.returncode != 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    # Should show p-value in output
+    assert "(p=0.729" in stdout or "(p=0.729" in proc.stderr, stdout
+    # Should have warnings about exact binomial test usage
+    assert "exact_binomial" in stdout or "exact_binomial" in proc.stderr, stdout
+
+
+def test_z_test_alternative_kwargs(isolated_env):
+    """Test statistical hypothesis testing with H0 parameter using alternative kwarg names."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent("""
+    import pytest
+    @pytest.mark.repeated(null=0.9, ci=0.95, n=3)
+    def test_always_passes():
+        assert True
+    """)
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    # With 3/3 passes and null=0.9, p-value will be 0.729, which fails to reject H0
+    # so the test should FAIL
+    assert proc.returncode != 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    # Should show p-value in output
+    assert "(p=" in stdout or "(p=" in proc.stderr, stdout
+    # Should have warnings about exact binomial test usage
+    assert "exact_binomial" in stdout or "exact_binomial" in proc.stderr, stdout
