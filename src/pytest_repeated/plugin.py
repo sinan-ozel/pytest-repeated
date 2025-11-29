@@ -194,13 +194,22 @@ def pytest_runtest_makereport(item, call):
 
         # Get threshold to determine if test should pass
         marker = item.get_closest_marker("repeated")
-        times = marker.kwargs.get("times", 1)
-        n = marker.kwargs.get("n", times)
+        times = marker.kwargs.get("times")
+        n = marker.kwargs.get("n")
         threshold = marker.kwargs.get("threshold", 1) if marker else 1
         null = marker.kwargs.get("H0")
         if null is None:
             null = marker.kwargs.get("null")
         ci = marker.kwargs.get("ci", .95)
+
+        # Determine actual times and n
+        if times is None and n is None:
+            times = 1
+            n = times
+        elif times is None:
+            times = n
+        elif n is None:
+            n = times
 
         if null is not None:
             # Use statistical test to determine pass/fail

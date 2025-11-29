@@ -19,32 +19,15 @@ def test_flaky():
 @pytest.fixture
 def isolated_env():
     """
-    Sets up an isolated temp directory containing the plugin, and returns:
-        (base_path, env)
-    The test is responsible for writing test files.
+    Sets up an isolated temp directory for test files.
+    The plugin is already installed via entry point, so no manual registration needed.
+    Returns: (base_path, env)
     """
     temp_dir = tempfile.mkdtemp()
-
     base = Path(temp_dir)
-
-    # Locate plugin
-    plugin_path = (Path(__file__).resolve().parent.parent / "src" /
-                   "pytest_repeated" / "plugin.py")
-    assert plugin_path.exists()
-
-    # Copy plugin
-    pkg_dir = base / "pytest_repeated"
-    pkg_dir.mkdir()
-    shutil.copy(plugin_path, pkg_dir / "plugin.py")
-    (pkg_dir / "__init__.py").write_text("")
-
-    # Create conftest.py to register the plugin
-    conftest_content = "pytest_plugins = ['pytest_repeated.plugin']\n"
-    (base / "conftest.py").write_text(conftest_content)
 
     # Build environment
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(base) + os.pathsep + env.get("PYTHONPATH", "")
 
     yield base, env
 
