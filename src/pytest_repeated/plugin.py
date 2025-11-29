@@ -5,8 +5,12 @@ import math
 def one_sided_proportion_test(r, n, N, alpha=0.05):
     """Perform a one-sided hypothesis test for a population proportion.
 
+    Uses exact binomial test for small samples (N < 30 or N*r*(1-r) < 10),
+    and normal approximation for larger samples.
+
     H0: p <= r
     H1: p > r
+
     Args:
         r (float): hypothesized proportion under null (0 <= r <= 1)
         n (int): number of successes observed (0 <= n <= N)
@@ -14,7 +18,7 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         alpha (float): significance level for the test (default 0.05)
 
     Returns:
-        dict: {"Z": float, "p_value": float, "reject": bool, "phat": float}
+        dict: {"p_value": float, "reject": bool, "p̂": float, "method": str}
 
     Raises:
         ValueError: if input parameters are out of bounds
@@ -29,39 +33,78 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
     # Observed proportion
     p̂ = n / N
 
-    # If r is asymptotic and equals 0 or 1, handle directly
+    # Handle edge cases for r = 0 or r = 1
     if r == 0:
         # H0: p <= 0 means any n>0 rejects immediately
         return {
-            "Z": float("inf") if n > 0 else float("-inf"),
             "p_value": 0.0 if n > 0 else 1.0,
             "reject": (n > 0),
-            "phat": p̂,
+            "p̂": p̂,
+            "method": "exact",
         }
     if r == 1:
-        # H0: p <= 1 is always true unless n < N
+        # H0: p <= 1 is always true unless we need perfect success
         return {
-            "Z": float("-inf") if n < N else float("inf"),
             "p_value": 1.0 if n < N else 0.0,
             "reject": False,
-            "phat": p̂,
+            "p̂": p̂,
+            "method": "exact",
         }
 
-    # Standard error from asymptotic null proportion r
-    se = math.sqrt(r * (1 - r) / N)
+    # Decide which test to use based on sample size
+    use_exact = N < 30 or N * r * (1 - r) < 10
 
-    Z = (p̂ - r) / se
+    if use_exact:
+        # Exact binomial test
+        # P-value = P(X >= n | X ~ Binomial(N, r))
+        # = sum_{k=n}^{N} C(N,k) * r^k * (1-r)^(N-k)
 
-    # One-sided p-value: P(Z_obs >= Z | H0)
-    # For right-tailed test: P(Z >= z) = 1 - Φ(z) = 0.5 * erfc(z/sqrt(2))
-    p_value = 0.5 * math.erfc(Z / math.sqrt(2))
+        # Use log probabilities to avoid overflow
+        from math import comb, log, exp
 
-    return {
-        "Z": Z,
-        "p_value": p_value,
-        "reject": p_value < alpha,
-        "phat": p̂,
-    }
+        # Compute log(P(X = k)) for k from n to N
+        log_probs = []
+        for k in range(n, N + 1):
+            # log(C(N,k) * r^k * (1-r)^(N-k))
+            log_prob = (
+                log(comb(N, k)) +
+                k * log(r) +
+                (N - k) * log(1 - r)
+            )
+            log_probs.append(log_prob)
+
+        # Use log-sum-exp trick for numerical stability
+        max_log_prob = max(log_probs)
+        p_value = sum(exp(lp - max_log_prob) for lp in log_probs) * exp(max_log_prob)
+
+        # Clamp to [0, 1] due to numerical errors
+        p_value = max(0.0, min(1.0, p_value))
+
+        return {
+            "p_value": p_value,
+            "reject": p_value < alpha,
+            "p̂": p̂,
+            "method": "exact_binomial",
+        }
+    else:
+        # Normal approximation with continuity correction
+        # Standard error from null proportion r
+        se = math.sqrt(r * (1 - r) / N)
+
+        # Apply continuity correction: use (n - 0.5) instead of n
+        # This gives better approximation for discrete -> continuous
+        Z = ((n - 0.5) / N - r) / se
+
+        # One-sided p-value: P(Z >= z)
+        # For right-tailed test: P(Z >= z) = 1 - Φ(z) = 0.5 * erfc(z/sqrt(2))
+        p_value = 0.5 * math.erfc(Z / math.sqrt(2))
+
+        return {
+            "p_value": p_value,
+            "reject": p_value < alpha,
+            "p̂": p̂,
+            "method": "normal_approximation",
+        }
 
 
 def pytest_configure(config):
@@ -176,12 +219,13 @@ def pytest_runtest_makereport(item, call):
             report.shortrepr = f"(p={p_value:.3f})"
             report._p_value = p_value
 
-            # Warn about small sample size
-            if total < 30 or total * null * (1 - null) < 5:
+            # Note which method was used (for transparency)
+            method = test_result.get("method", "unknown")
+            if total < 30 or total * null * (1 - null) < 10:
                 import warnings
                 warnings.warn(
-                    f"Sample size N={total} may be too small for asymptotic normal approximation. "
-                    f"Recommend N >= 30 and N*p*(1-p) >= 5.",
+                    f"Using {method} test with N={total}. "
+                    f"For more reliable results, consider N >= 30.",
                     UserWarning,
                     stacklevel=2
                 )
