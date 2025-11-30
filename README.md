@@ -12,7 +12,7 @@ or it passes by rejecting the null hypothesis of a one-sided proportion test.
 ## Purpose
 I want to leverage `pytest` for model evaluation in a way that can be readily incorporated into CI/CD flows.
 
-## The Case For Statistical Umit Testing
+## The Case For Statistical Unit Testing
 Originally, unit testing was expected to be completely deterministeic.
 That was because computer programs behaved completely deterministically.
 More recently, computer programs started incoprating staitsical procedures.

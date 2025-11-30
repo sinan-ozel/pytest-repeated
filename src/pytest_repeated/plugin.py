@@ -1,4 +1,5 @@
 import math
+import warnings
 
 import pytest
 
@@ -106,6 +107,39 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         }
 
 
+def _apply_statistical_test(report, passes, total, null, ci):
+    """Apply statistical hypothesis test to determine test outcome.
+
+    Args:
+        report: The test report object to update
+        passes: Number of passing runs
+        total: Total number of runs
+        null: Null hypothesis proportion (H0)
+        ci: Confidence interval level
+    """
+    test_result = one_sided_proportion_test(r=null, n=passes, N=total, alpha=1 - ci)
+    p_value = test_result["p_value"]
+
+    if test_result["reject"]:
+        report.outcome = "passed"
+    else:
+        report.outcome = "failed"
+
+    # make outcome text shorter in summary line
+    report.shortrepr = f"(p={p_value:.3f})"
+    report._p_value = p_value
+
+    # Note which method was used (for transparency)
+    method = test_result.get("method", "unknown")
+    if total < 30 or total * null * (1 - null) < 10:
+        warnings.warn(
+            f"Using {method} test with N={total}. "
+            f"For more reliable results, consider N >= 30.",
+            UserWarning,
+            stacklevel=2,
+        )
+
+
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
@@ -134,8 +168,6 @@ def pytest_runtest_call(item):
 
     # Warn if using statistical test with insufficient trials
     if null is not None and times <= 1:
-        import warnings
-
         warnings.warn(
             f"Statistical test (H0={null}) requires multiple trials. "
             f"Set times > 1 (currently times={times}).",
@@ -221,30 +253,7 @@ def pytest_runtest_makereport(item, call):
 
         if null is not None:
             # Use statistical test to determine pass/fail
-            test_result = one_sided_proportion_test(
-                r=null, n=passes, N=total, alpha=1 - ci
-            )
-            p_value = test_result["p_value"]
-            if test_result["reject"]:
-                report.outcome = "passed"
-            else:
-                report.outcome = "failed"
-
-            # make outcome text shorter in summary line
-            report.shortrepr = f"(p={p_value:.3f})"
-            report._p_value = p_value
-
-            # Note which method was used (for transparency)
-            method = test_result.get("method", "unknown")
-            if total < 30 or total * null * (1 - null) < 10:
-                import warnings
-
-                warnings.warn(
-                    f"Using {method} test with N={total}. "
-                    f"For more reliable results, consider N >= 30.",
-                    UserWarning,
-                    stacklevel=2,
-                )
+            _apply_statistical_test(report, passes, total, null, ci)
         else:
             # Override outcome based on threshold
             if passes >= threshold:
