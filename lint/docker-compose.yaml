@@ -1,11 +1,12 @@
+version: '3.8'
 services:
   linter:
     build:
-      context: ${HOST_PROJECT_PATH:-.}/..
+      context: ..
       dockerfile: lint/Dockerfile
     image: pytest-repeated-lint:latest
-    working_dir: /workspace
-    volumes:
-      - ${HOST_PROJECT_PATH:-..}:/workspace
     command: ./lint/lint_and_format.sh
+    working_dir: /app
+    volumes:
+      - ..:/app
 
