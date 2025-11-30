@@ -117,7 +117,9 @@ def _apply_statistical_test(report, passes, total, null, ci):
         null: Null hypothesis proportion (H0)
         ci: Confidence interval level
     """
-    test_result = one_sided_proportion_test(r=null, n=passes, N=total, alpha=1 - ci)
+    test_result = one_sided_proportion_test(
+        r=null, n=passes, N=total, alpha=1 - ci
+    )
     p_value = test_result["p_value"]
 
     if test_result["reject"]:
@@ -140,6 +142,26 @@ def _apply_statistical_test(report, passes, total, null, ci):
         )
 
 
+def _resolve_times_and_n(times, n):
+    """Resolve times and n parameters, handling None values.
+
+    Args:
+        times: Number of times to run the test (or None)
+        n: Alternative name for times (or None)
+
+    Returns:
+        tuple: (times, n) with None values resolved
+    """
+    if times is None and n is None:
+        times = 1
+        n = times
+    elif times is None:
+        times = n
+    elif n is None:
+        n = times
+    return times, n
+
+
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
@@ -158,13 +180,7 @@ def pytest_runtest_call(item):
     null = marker.kwargs.get("H0") or marker.kwargs.get("null")
 
     # Determine actual times and n
-    if times is None and n is None:
-        times = 1
-        n = times
-    elif times is None:
-        times = n
-    elif n is None:
-        n = times
+    times, n = _resolve_times_and_n(times, n)
 
     # Warn if using statistical test with insufficient trials
     if null is not None and times <= 1:
@@ -234,22 +250,16 @@ def pytest_runtest_makereport(item, call):
 
         # Get threshold to determine if test should pass
         marker = item.get_closest_marker("repeated")
+
         times = marker.kwargs.get("times")
         n = marker.kwargs.get("n")
+        times, n = _resolve_times_and_n(times, n)
+
         threshold = marker.kwargs.get("threshold", 1) if marker else 1
         null = marker.kwargs.get("H0")
         if null is None:
             null = marker.kwargs.get("null")
         ci = marker.kwargs.get("ci", 0.95)
-
-        # Determine actual times and n
-        if times is None and n is None:
-            times = 1
-            n = times
-        elif times is None:
-            times = n
-        elif n is None:
-            n = times
 
         if null is not None:
             # Use statistical test to determine pass/fail
