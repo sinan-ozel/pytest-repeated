@@ -1,4 +1,5 @@
 import math
+import warnings
 
 import pytest
 
@@ -67,13 +68,14 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         log_probs = []
         for k in range(n, N + 1):
             # log(C(N,k) * r^k * (1-r)^(N-k))
-            log_prob = (log(comb(N, k)) + k * log(r) + (N - k) * log(1 - r))
+            log_prob = log(comb(N, k)) + k * log(r) + (N - k) * log(1 - r)
             log_probs.append(log_prob)
 
         # Use log-sum-exp trick for numerical stability
         max_log_prob = max(log_probs)
-        p_value = sum(exp(lp - max_log_prob)
-                      for lp in log_probs) * exp(max_log_prob)
+        p_value = sum(exp(lp - max_log_prob) for lp in log_probs) * exp(
+            max_log_prob
+        )
 
         # Clamp to [0, 1] due to numerical errors
         p_value = max(0.0, min(1.0, p_value))
@@ -105,10 +107,65 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         }
 
 
+def _apply_statistical_test(report, passes, total, null, ci):
+    """Apply statistical hypothesis test to determine test outcome.
+
+    Args:
+        report: The test report object to update
+        passes: Number of passing runs
+        total: Total number of runs
+        null: Null hypothesis proportion (H0)
+        ci: Confidence interval level
+    """
+    test_result = one_sided_proportion_test(
+        r=null, n=passes, N=total, alpha=1 - ci
+    )
+    p_value = test_result["p_value"]
+
+    if test_result["reject"]:
+        report.outcome = "passed"
+    else:
+        report.outcome = "failed"
+
+    # make outcome text shorter in summary line
+    report.shortrepr = f"(p={p_value:.3f})"
+    report._p_value = p_value
+
+    # Note which method was used (for transparency)
+    method = test_result.get("method", "unknown")
+    if total < 30 or total * null * (1 - null) < 10:
+        warnings.warn(
+            f"Using {method} test with N={total}. "
+            f"For more reliable results, consider N >= 30.",
+            UserWarning,
+            stacklevel=2,
+        )
+
+
+def _resolve_times_and_n(times, n):
+    """Resolve times and n parameters, handling None values.
+
+    Args:
+        times: Number of times to run the test (or None)
+        n: Alternative name for times (or None)
+
+    Returns:
+        tuple: (times, n) with None values resolved
+    """
+    if times is None and n is None:
+        times = 1
+        n = times
+    elif times is None:
+        times = n
+    elif n is None:
+        n = times
+    return times, n
+
+
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
-        "repeated(times, threshold): run a test multiple times and pass if threshold met"
+        "repeated(times, threshold): run a test multiple times and pass if threshold met",
     )
 
 
@@ -123,22 +180,16 @@ def pytest_runtest_call(item):
     null = marker.kwargs.get("H0") or marker.kwargs.get("null")
 
     # Determine actual times and n
-    if times is None and n is None:
-        times = 1
-        n = times
-    elif times is None:
-        times = n
-    elif n is None:
-        n = times
+    times, n = _resolve_times_and_n(times, n)
 
     # Warn if using statistical test with insufficient trials
     if null is not None and times <= 1:
-        import warnings
         warnings.warn(
             f"Statistical test (H0={null}) requires multiple trials. "
             f"Set times > 1 (currently times={times}).",
             UserWarning,
-            stacklevel=2)
+            stacklevel=2,
+        )
 
     # Collect results
     passes = 0
@@ -185,57 +236,34 @@ def pytest_runtest_makereport(item, call):
                     if status == "PASS":
                         details_lines.append(f"  Run {run_num}: {status}")
                     else:
-                        error_preview = error[:80] + "..." if error and len(
-                            error) > 80 else error
+                        error_preview = (
+                            error[:80] + "..."
+                            if error and len(error) > 80
+                            else error
+                        )
                         details_lines.append(
-                            f"  Run {run_num}: {status} - {error_preview}")
+                            f"  Run {run_num}: {status} - {error_preview}"
+                        )
                 report.sections.append(
-                    ("repeated details", "\n".join(details_lines)))
+                    ("repeated details", "\n".join(details_lines))
+                )
 
-        # Get threshold to determine if test should pass
+        # Get the decorator kwargs
         marker = item.get_closest_marker("repeated")
+
         times = marker.kwargs.get("times")
         n = marker.kwargs.get("n")
+        times, n = _resolve_times_and_n(times, n)
+
         threshold = marker.kwargs.get("threshold", 1) if marker else 1
         null = marker.kwargs.get("H0")
         if null is None:
             null = marker.kwargs.get("null")
-        ci = marker.kwargs.get("ci", .95)
-
-        # Determine actual times and n
-        if times is None and n is None:
-            times = 1
-            n = times
-        elif times is None:
-            times = n
-        elif n is None:
-            n = times
+        ci = marker.kwargs.get("ci", 0.95)
 
         if null is not None:
             # Use statistical test to determine pass/fail
-            test_result = one_sided_proportion_test(r=null,
-                                                    n=passes,
-                                                    N=total,
-                                                    alpha=1 - ci)
-            p_value = test_result["p_value"]
-            if test_result["reject"]:
-                report.outcome = "passed"
-            else:
-                report.outcome = "failed"
-
-            # make outcome text shorter in summary line
-            report.shortrepr = f"(p={p_value:.3f})"
-            report._p_value = p_value
-
-            # Note which method was used (for transparency)
-            method = test_result.get("method", "unknown")
-            if total < 30 or total * null * (1 - null) < 10:
-                import warnings
-                warnings.warn(
-                    f"Using {method} test with N={total}. "
-                    f"For more reliable results, consider N >= 30.",
-                    UserWarning,
-                    stacklevel=2)
+            _apply_statistical_test(report, passes, total, null, ci)
         else:
             # Override outcome based on threshold
             if passes >= threshold:
@@ -268,9 +296,17 @@ def pytest_report_teststatus(report, config):
         # verbose string shown in -v/-vv
         if hasattr(report, "_p_value"):
             p_value = report._p_value
-            verbose = f"PASSED (p={p_value:.3f})" if report.outcome == "passed" else f"FAILED (p={p_value:.3f})"
+            verbose = (
+                f"PASSED (p={p_value:.3f})"
+                if report.outcome == "passed"
+                else f"FAILED (p={p_value:.3f})"
+            )
         else:
-            verbose = f"PASSED ({passes}/{total})" if report.outcome == "passed" else f"FAILED ({passes}/{total})"
+            verbose = (
+                f"PASSED ({passes}/{total})"
+                if report.outcome == "passed"
+                else f"FAILED ({passes}/{total})"
+            )
 
         # Return correct tuple shape
         return (report.outcome, short, verbose)
@@ -294,6 +330,9 @@ def pytest_runtest_logreport(report):
                     if status == "PASS":
                         tw.line(f"  Run {run_num}: {status}")
                     else:
-                        error_preview = error[:80] + "..." if error and len(
-                            error) > 80 else error
+                        error_preview = (
+                            error[:80] + "..."
+                            if error and len(error) > 80
+                            else error
+                        )
                         tw.line(f"  Run {run_num}: {status} - {error_preview}")

@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   test:
     build:
@@ -6,6 +5,5 @@ services:
       dockerfile: tests/Dockerfile
     image: pytest-repeated-test:latest
     command: pytest
-    volumes:
-      - ../tests:/app/tests
+    working_dir: /app
 

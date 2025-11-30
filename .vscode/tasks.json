@@ -19,6 +19,25 @@
         "kind": "test",
         "isDefault": true
       }
+    },
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f", "${workspaceFolder}/lint/docker-compose.yaml",
+        "--project-directory", "${workspaceFolder}/lint",
+        "up",
+        "--build",
+        "--abort-on-container-exit",
+        "--exit-code-from", "linter"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
     }
   ]
 }
