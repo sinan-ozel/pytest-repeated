@@ -1,15 +1,16 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /workspace
 
-# Copy pyproject.toml from the parent directory
-COPY pyproject.toml .
-COPY src/pytest_repeated ./src/pytest_repeated
-COPY lint/lint_and_format.sh ./src/lint_and_format.sh
+# Copy only pyproject.toml to install dependencies
+COPY pyproject.toml /tmp/pyproject.toml
+COPY src/pytest_repeated/__init__.py /tmp/src/pytest_repeated/__init__.py
 
-RUN pip install --upgrade pip
-RUN pip install .           # Install main project dependencies
-RUN pip install .[dev]     # Install development dependencies
+RUN pip install --upgrade pip && \
+    cd /tmp && \
+    pip install . && \
+    pip install .[dev] && \
+    rm -rf /tmp/*
 
-# Default command: run tests
-CMD ["/src/lint_and_format.sh"]
+# Files will be mounted at /workspace
+CMD ["./lint/lint_and_format.sh"]
