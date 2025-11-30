@@ -248,7 +248,7 @@ def pytest_runtest_makereport(item, call):
                     ("repeated details", "\n".join(details_lines))
                 )
 
-        # Get threshold to determine if test should pass
+        # Get the decorator kwargs
         marker = item.get_closest_marker("repeated")
 
         times = marker.kwargs.get("times")
