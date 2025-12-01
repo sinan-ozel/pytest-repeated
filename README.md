@@ -6,14 +6,14 @@
 
 # Introduction
 
-This is a statistical unit testing plugin for pytest.
+This is a statistical unit testing plugin for pytest. 📊
 It repeats tests and pass if the underlying test passes a number of times out of a total,
 or it passes by rejecting the null hypothesis of a one-sided proportion test.
 
-## Purpose
+## Purpose: 🔄📊
 I want to leverage `pytest` for model evaluation in a way that can be readily incorporated into CI/CD flows.
 
-## The Case For Statistical Unit Testing
+## 🎲 The Case For Statistical Unit Testing
 Originally, unit testing was expected to be completely deterministic.
 That was because computer programs behaved completely deterministically.
 More recently, computer programs started incorporating statistical procedures.
@@ -26,15 +26,15 @@ It is time, as of Dec 2025, to incorporate statistical testing.
 
 (Also consider giving `pytest-repeat` a look - I wrote `pytest-repeated` for _statistical_ testing, as in, there are situations where one or two failures out of a hundred is acceptable.)
 
-# Installation
+# 📦 Installation
 
 ```
 pip install pytest-repeated
 ```
 
-# 🚀 Usage Example
+# 🚀 Usage Examples
 
-## Basic Usage
+## 🎲 Basic Usage
 
 ```
 @pytest.mark.repeated(times=4, threshold=2)
@@ -47,7 +47,7 @@ This test will run four times and pass if we get `True` in at least two of the f
 
 This is the test that is easiest to explain to stakeholders.
 
-## Statistical (Frequentist) Usage
+## 📈 Statistical (Frequentist) Usage
 
 ```
 @pytest.mark.repeated(null=0.9, ci=0.95, n=10)
@@ -61,9 +61,9 @@ We would like to reject this `null` hypothesis with a .95 level of confidence, s
 If this test passes, that means that the underlying (decorated) test (`test_example_random`) is likely to pass 90% of the time with a .95 level of confidence.
 Another way to think about this is: If the `null` had been correct (The test's chance of success is less than 90% in real operation), we would have less than 5% (1-CI) probability to have the test passed as many times as it did.
 Admittedly, this is confusing to express to many. However, rejecting a null is a roundabout way of expressing our level of confidence in a world of uncertainty, but it is a well-established and objective way.
-Use this in organizations that have an established understanding of probability.
+Use this in organizations that have an established understanding of probability. 🎯
 
-## Further Frequentist Knowledge
+## 📚 Further Frequentist Knowledge
 
 The test below will correctly fail to reject the null, and the test will fail:
 
@@ -96,7 +96,7 @@ The following test will likely incorrectly fail to reject the null (because of t
 ```
 
 
-## Bayesian Usage
+## 🔮 Bayesian Usage
 ```
 @pytest.mark.repeated(posterior_threshold_probability=.9, success_rate_threshold=0.7, n=200)
 def test_example_random():
@@ -115,9 +115,9 @@ The prior is Beta-distributed.
 `prior_alpha` and `prior_beta` correspond to the initial number of successes and failures before the test was run.
 
 PS: I love Bayesian statistics, but I am not an expert.
-If you spot a mistake or unexpected behaviour, please reach out through github and suggest a correction if anything is wrong or amiss.
+If you spot a mistake or unexpected behaviour, please reach out through github and suggest a correction if anything is wrong or amiss. 🤝
 
-## Choosing Between Bayesian and Frequentist Approach
+## 🤔 Choosing Between Bayesian and Frequentist Approach
 
 Honestly, in most cases, just go with the top example.
 
@@ -149,9 +149,9 @@ docker compose -f tests/docker-compose.yaml up --build --abort-on-container-exit
 
 4. When satisfied, push and open a PR. The pipeline will publish automatically when your PR is merged.
 
-# Future Plans
+# 🚧 Future Plans
 
-- [ ] Optimized testing - stop conditions.
-- [ ] Sequential testing.
-- [ ] Ability to set the seed.
-- [ ] Report and fail on speed
+- [ ] Optimized testing - stop conditions. ⚡
+- [ ] Sequential testing. 📐
+- [ ] Ability to set the seed. 🌱
+- [ ] Report and fail on speed ⏱️
