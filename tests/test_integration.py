@@ -590,7 +590,9 @@ def test_bayesian_test(isolated_env):
         "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
     )
     # Should show posterior probability in output
-    assert "P(p>0.7|tests)=" in stdout or "P(p>0.7|tests)=" in proc.stderr, stdout
+    assert (
+        "P(p>0.7|tests)=" in stdout or "P(p>0.7|tests)=" in proc.stderr
+    ), stdout
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
@@ -625,12 +627,12 @@ def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env):
     print("=" * 80)
 
     # Should fail with a clear error message
-    assert proc.returncode != 0, (
-        "STDOUT:\n" + stdout + "\nSTDERR:\n" + stderr
-    )
+    assert proc.returncode != 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + stderr
     # Should contain the error message about missing success_rate_threshold
     combined_output = stdout + stderr
-    assert "success_rate_threshold is required" in combined_output, combined_output
+    assert (
+        "success_rate_threshold is required" in combined_output
+    ), combined_output
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
@@ -669,7 +671,9 @@ def test_bayesian_test_with_custom_prior(isolated_env):
     # With informative prior (alpha=10, beta=10) centered at 0.5,
     # a small number of observations won't drastically change the posterior
     # Should show posterior probability in output
-    assert "P(p>0.5|tests)=" in stdout or "P(p>0.5|tests)=" in proc.stderr, stdout
+    assert (
+        "P(p>0.5|tests)=" in stdout or "P(p>0.5|tests)=" in proc.stderr
+    ), stdout
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
@@ -708,6 +712,6 @@ def test_bayesian_test_with_alternative_prior_names(isolated_env):
         "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
     )
     # Should show posterior probability in output
-    assert "P(p>0.5|tests)=" in stdout or "P(p>0.5|tests)=" in proc.stderr, stdout
-
-
+    assert (
+        "P(p>0.5|tests)=" in stdout or "P(p>0.5|tests)=" in proc.stderr
+    ), stdout
