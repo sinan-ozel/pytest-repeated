@@ -235,7 +235,9 @@ def _apply_bayesian_test(
         report.outcome = "failed"
 
     # make outcome text shorter in summary line
-    report.shortrepr = f"(P(p>{success_rate_threshold}|data)={posterior_prob:.3f})"
+    report.shortrepr = (
+        f"(P(p>{success_rate_threshold}|data)={posterior_prob:.3f})"
+    )
     report._posterior_prob = posterior_prob
     report._success_rate_threshold = success_rate_threshold
 
@@ -470,7 +472,9 @@ def pytest_report_teststatus(report, config):
         # verbose string shown in -v/-vv
         if hasattr(report, "_posterior_prob"):
             posterior_prob = report._posterior_prob
-            success_rate_threshold = getattr(report, "_success_rate_threshold", 0.5)
+            success_rate_threshold = getattr(
+                report, "_success_rate_threshold", 0.5
+            )
             verbose = (
                 f"PASSED (P(p>{success_rate_threshold}|tests)={posterior_prob:.3f})"
                 if report.outcome == "passed"
