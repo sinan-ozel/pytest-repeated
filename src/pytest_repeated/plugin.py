@@ -197,6 +197,7 @@ def _apply_bayesian_test(
     posterior_threshold_probability,
     prior_alpha,
     prior_beta,
+    success_rate_threshold,
 ):
     """Apply Bayesian hypothesis test to determine test outcome.
 
@@ -207,10 +208,19 @@ def _apply_bayesian_test(
         posterior_threshold_probability: Credible threshold for posterior
         prior_alpha: Prior successes (Beta parameter)
         prior_beta: Prior failures (Beta parameter)
+        success_rate_threshold: Minimum success rate to test for (required)
     """
-    # We test if p > 0.5 (more likely to pass than fail)
+    if success_rate_threshold is None:
+        raise ValueError(
+            "success_rate_threshold is required when using posterior_threshold_probability. "
+            "Specify the minimum success rate to test against, e.g., "
+            "@pytest.mark.repeated(posterior_threshold_probability=0.95, success_rate_threshold=0.5) "
+            "This is how many times you want the underlying code to behave as desired."
+        )
+
+    # We test if p > success_rate_threshold
     test_result = bayes_one_sided_proportion_test(
-        r=0.5,
+        r=success_rate_threshold,
         n=passes,
         N=total,
         prior_successes=prior_alpha,
@@ -225,8 +235,9 @@ def _apply_bayesian_test(
         report.outcome = "failed"
 
     # make outcome text shorter in summary line
-    report.shortrepr = f"(P(p>0.5|data)={posterior_prob:.3f})"
+    report.shortrepr = f"(P(p>{success_rate_threshold}|data)={posterior_prob:.3f})"
     report._posterior_prob = posterior_prob
+    report._success_rate_threshold = success_rate_threshold
 
 
 def _resolve_times_and_n(times, n):
@@ -402,6 +413,7 @@ def pytest_runtest_makereport(item, call):
         prior_beta = marker.kwargs.get("prior_failures") or marker.kwargs.get(
             "prior_beta", 1
         )
+        success_rate_threshold = marker.kwargs.get("success_rate_threshold")
 
         if posterior_threshold_probability is not None:
             # Use Bayesian test to determine pass/fail
@@ -412,6 +424,7 @@ def pytest_runtest_makereport(item, call):
                 posterior_threshold_probability,
                 prior_alpha,
                 prior_beta,
+                success_rate_threshold,
             )
         elif null is not None:
             # Use statistical test to determine pass/fail
@@ -457,10 +470,11 @@ def pytest_report_teststatus(report, config):
         # verbose string shown in -v/-vv
         if hasattr(report, "_posterior_prob"):
             posterior_prob = report._posterior_prob
+            success_rate_threshold = getattr(report, "_success_rate_threshold", 0.5)
             verbose = (
-                f"PASSED (P(p>0.5|tests)={posterior_prob:.3f})"
+                f"PASSED (P(p>{success_rate_threshold}|tests)={posterior_prob:.3f})"
                 if report.outcome == "passed"
-                else f"FAILED (P(p>0.5|tests)={posterior_prob:.3f})"
+                else f"FAILED (P(p>{success_rate_threshold}|tests)={posterior_prob:.3f})"
             )
         elif hasattr(report, "_p_value"):
             p_value = report._p_value

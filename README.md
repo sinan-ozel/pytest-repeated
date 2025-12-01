@@ -97,7 +97,7 @@ The following test will likely incorrectly fail to reject the null (because of t
 
 ## Bayesian Usage
 ```
-@pytest.mark.repeated(posterior_threshold_probability=.9, n=200)
+@pytest.mark.repeated(posterior_threshold_probability=.9, success_rate_threshold=0.7, n=200)
 def test_example_random():
     import random
     assert random.choice([True, False])  # may pass or fail
@@ -105,8 +105,16 @@ def test_example_random():
 
 In this example, we are interpreting the pass as follows: I believe that the code is likely work as desired 90% of the time.
 This belief is based on a Bayesian update based on the 200 trials.
+The test passes if after these 200 trials, our updated belief is greater than 70%.
+In other words, if the test passed, we believe that there is at least a 70% probability that the code works as desired 90% of the time.
 This is much easier to digest and interpret compared to the frequentist method, but is somewhat more subjective.
 
+If you know more about Bayesian statistics, you can also set the `alpha` and `beta` of prior.
+The prior is a Beta prior.
+`alpha` and `beta` correspond to the initial number of successes and failures before the test was run.
+
+PS: I love Bayesian statistics, but I am not an expert.
+If you sport a mistake or unexpected behaviour, please reach out through github and suggest a correction if anything is wrong or amiss.
 
 
 # 🛠️ Development
@@ -130,4 +138,3 @@ docker compose -f tests/docker-compose.yaml up --build --abort-on-container-exit
 - [ ] Sequential testing.
 - [ ] Ability to set the seed.
 - [ ] Report and fail on speed
-- [ ] A Bayesian test with a prior and desired posterior
