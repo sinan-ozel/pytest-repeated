@@ -63,7 +63,7 @@ Another way to think about this is: If the `null` had been correct (The test's c
 Admittedly, this is confusing to express to many. However, rejecting a null is a roundabout way of expressing our level of confidence in a world of uncertainty, but it is a well-established and objective way.
 Use this in organizations that have an established understanding of probability.
 
-## Further Frwquentist Knowledge
+## Further Frequentist Knowledge
 
 The test below will correctly fail to reject the null, and the test will fail:
 
@@ -88,7 +88,7 @@ The following test will likely reject the null, and correctly pass, as desired.
 ```
 
 The following test will likely incorrectly fail to reject the null (because of the low repetition), resulting in a Type II error.
-```
+
 ```
 @pytest.mark.repeated(null=0.9, ci=0.95, n=50)
     def test_succeed_95_percent():
@@ -116,6 +116,19 @@ The prior is Beta-distributed.
 
 PS: I love Bayesian statistics, but I am not an expert.
 If you sport a mistake or unexpected behaviour, please reach out through github and suggest a correction if anything is wrong or amiss.
+
+## Choosing Between Bayesian and Frequentist Approach
+
+Honestly, in most cases, just go with the top example.
+
+Frequentist statistics will work if an organization has lots of people with a background where they already know frequentist statistics.
+
+Bayesian will work better if you want to tell people,
+"Hey, I am 90% sure that the code will work as desired 99% of the time." It is still a mouthful, but more advanced that saying "well it passed 5 times out of 6."
+
+It is also a challenge to tell stakeholder that the code will fail some of the time, or that the deployment pipeline is going to very slow if they want more certainty. However, these seem to be realities of coding as Data Science, ML models and finally LLMs take their positions in our program.
+
+![Frequentists vs Bayesians](https://www.explainxkcd.com/wiki/images/7/78/frequentists_vs_bayesians.png)
 
 
 # 🛠️ Development
