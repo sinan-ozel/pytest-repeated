@@ -440,3 +440,77 @@ def test_z_test_alternative_kwargs(isolated_env):
     assert "(p=" in stdout or "(p=" in proc.stderr, stdout
     # Should have warnings about exact binomial test usage
     assert "exact_binomial" in stdout or "exact_binomial" in proc.stderr, stdout
+
+
+def test_z_test_statistical_fail_to_reject(isolated_env):
+    """Test statistical hypothesis testing with deterministic random seed."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    import random
+
+    random.seed(1729)
+
+    @pytest.mark.repeated(null=0.9, ci=0.95, n=10)
+    def test_coin_flip():
+        assert random.random() < 0.5
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-vv", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    print("=" * 80)
+    print("STDERR:")
+    print(proc.stderr)
+    print("=" * 80)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should show p-value in output
+    assert "(p=0.998" in stdout or "(p=0.998" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_bayesian_test(isolated_env):
+    """Test Bayesian hypothesis testing with posterior_threshold_probability parameter."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    @pytest.mark.repeated(times=10, posterior_threshold_probability=0.95)
+    def test_always_passes():
+        assert True
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    # With 10/10 passes, posterior probability should be very high
+    # so the test should PASS
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should show posterior probability in output
+    assert "P(p>0.5|tests)=" in stdout or "P(p>0.5|tests)=" in proc.stderr, stdout
+

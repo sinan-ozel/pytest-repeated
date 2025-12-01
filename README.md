@@ -46,7 +46,7 @@ This test will run four times and pass if we get `True` in at least two of the f
 
 This is the test that is easiest to explain to stakeholders.
 
-## Statistical Usage
+## Statistical (Frequentist) Usage
 
 ```
 @pytest.mark.repeated(null=.9, ci=0.95, n=200)
@@ -56,11 +56,25 @@ def test_example_random():
 ```
 
 For those of us with frequentist background, this is a statistical test.
-Our null hypothesis is that the underlying test will fail at most 90% of the time, set by the kwarg `null`.
+Our null hypothesis is that the underlying code will succeed at least 90% of the time, set by the kwarg `null`.
 We would like to reject this `null` hypothesis with a .95 level of confidence, so we set the kwarcg `ci` to .95.
 If this test passes, that means that the underlying (decorated) test (`test_example_random`) is likely to pass 90% of the time with a .95 level of confidence.
-If this sounds like a mouthful, it is, that is just frequentist statistics.
-Rejecting a null is a roundabout way of expressing our level of confidence in a world of uncertainty, but it is a well-established and objective way.
+Another way to think about this is: If the `null` had been correct (The test's chance of success is less thatn 90% in real operation), we would have less than 5% (1-CI) probability to have the test passed as many times as it did.
+Admittedly, this is confusing to express to many. However, rejecting a null is a roundabout way of expressing our level of confidence in a world of uncertainty, but it is a well-established and objective way.
+Use this in organizations that have an established understanding of probability.
+
+## Bayesian Usage
+```
+@pytest.mark.repeated(posterior_threshold_probability=.9, n=200)
+def test_example_random():
+    import random
+    assert random.choice([True, False])  # may pass or fail
+```
+
+In this example, we are interpreting the pass as follows: I believe that the code is likely work as desired 90% of the time.
+This belief is based on a Bayesian update based on the 200 trials.
+This is much easier to digest and interpret compared to the frequentist method, but is somewhat more subjective.
+
 
 
 # 🛠️ Development

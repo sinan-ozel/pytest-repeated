@@ -1,7 +1,55 @@
 import math
 import warnings
+import sys
+from io import StringIO
 
 import pytest
+from mpmath import betainc
+
+
+def bayes_one_sided_proportion_test(
+    r,
+    n,
+    N,
+    prior_successes=1,
+    prior_failures=1,
+    posterior_threshold_probability=0.95,
+):
+    """Perform a one-sided Bayesian test for a population proportion.
+
+    Uses Beta-Binomial conjugate prior to compute posterior probability
+    that the true proportion p > r.
+
+    Args:
+        r (float): threshold proportion (0 <= r <= 1)
+        n (int): number of successes observed (0 <= n <= N)
+        N (int): total number of trials (N > 0)
+        prior_successes (float): prior pseudo-count for successes (default 1, uninformative)
+        prior_failures (float): prior pseudo-count for failures (default 1, uninformative)
+        posterior_threshold_probability (float): credible threshold (default 0.95)
+
+    Returns:
+        dict: {
+            "posterior_prob": float,  # P(p > r | data)
+            "passes": bool,            # whether posterior_prob >= threshold
+            "alpha": float,            # posterior Beta parameter
+            "beta": float,             # posterior Beta parameter
+        }
+    """
+    # Posterior parameters (Beta conjugate update)
+    alpha = prior_successes + n
+    beta = prior_failures + (N - n)
+
+    # Posterior P(p > r) = 1 - F_Beta(r; alpha, beta)
+    posterior_cdf = betainc(alpha, beta, 0, r, regularized=True)
+    posterior_prob = float(1 - posterior_cdf)  # convert from mpmath to float
+
+    return {
+        "posterior_prob": posterior_prob,
+        "passes": posterior_prob >= posterior_threshold_probability,
+        "alpha": alpha,
+        "beta": beta,
+    }
 
 
 def one_sided_proportion_test(r, n, N, alpha=0.05):
@@ -142,6 +190,40 @@ def _apply_statistical_test(report, passes, total, null, ci):
         )
 
 
+def _apply_bayesian_test(
+    report, passes, total, posterior_threshold_probability, prior_alpha, prior_beta
+):
+    """Apply Bayesian hypothesis test to determine test outcome.
+
+    Args:
+        report: The test report object to update
+        passes: Number of passing runs
+        total: Total number of runs
+        posterior_threshold_probability: Credible threshold for posterior
+        prior_alpha: Prior successes (Beta parameter)
+        prior_beta: Prior failures (Beta parameter)
+    """
+    # We test if p > 0.5 (more likely to pass than fail)
+    test_result = bayes_one_sided_proportion_test(
+        r=0.5,
+        n=passes,
+        N=total,
+        prior_successes=prior_alpha,
+        prior_failures=prior_beta,
+        posterior_threshold_probability=posterior_threshold_probability,
+    )
+    posterior_prob = test_result["posterior_prob"]
+
+    if test_result["passes"]:
+        report.outcome = "passed"
+    else:
+        report.outcome = "failed"
+
+    # make outcome text shorter in summary line
+    report.shortrepr = f"(P(p>0.5|data)={posterior_prob:.3f})"
+    report._posterior_prob = posterior_prob
+
+
 def _resolve_times_and_n(times, n):
     """Resolve times and n parameters, handling None values.
 
@@ -176,8 +258,24 @@ def pytest_runtest_call(item):
 
     times = marker.kwargs.get("times")
     n = marker.kwargs.get("n")
-    threshold = marker.kwargs.get("threshold", 1)
+    threshold = marker.kwargs.get("threshold")
     null = marker.kwargs.get("H0") or marker.kwargs.get("null")
+    posterior_threshold_probability = marker.kwargs.get(
+        "posterior_threshold_probability"
+    )
+
+    # Validate that at most one test method is specified
+    test_methods = [threshold, null, posterior_threshold_probability]
+    non_none_count = sum(x is not None for x in test_methods)
+    if non_none_count > 1:
+        raise ValueError(
+            "At most one of 'threshold', 'null' (or 'H0'), and "
+            "'posterior_threshold_probability' can be specified"
+        )
+
+    # Set default threshold if no test method specified
+    if non_none_count == 0:
+        threshold = 1
 
     # Determine actual times and n
     times, n = _resolve_times_and_n(times, n)
@@ -196,22 +294,52 @@ def pytest_runtest_call(item):
     last_exception = None
     run_details = []
 
+    # Get verbosity level safely
+    try:
+        verbosity = item.config.option.verbose
+    except AttributeError:
+        verbosity = 0
+
     for i in range(times):
-        try:
-            item.runtest()  # run the actual test function
-            passes += 1
-            run_details.append((i + 1, "PASS", None))
-        except Exception as e:
-            last_exception = e
-            run_details.append((i + 1, "FAIL", str(e)))
+        # Capture output from individual runs (unless at high verbosity)
+        # This prevents output spam at verbosity level 1-2
+        if verbosity >= 3:
+            # At -vvv, show all output
+            try:
+                item.runtest()
+                passes += 1
+                run_details.append((i + 1, "PASS", None))
+            except Exception as e:
+                last_exception = e
+                run_details.append((i + 1, "FAIL", str(e)))
+        else:
+            # Suppress output from individual runs
+            old_stdout = sys.stdout
+            old_stderr = sys.stderr
+            try:
+                sys.stdout = StringIO()
+                sys.stderr = StringIO()
+                item.runtest()
+                passes += 1
+                run_details.append((i + 1, "PASS", None))
+            except Exception as e:
+                last_exception = e
+                run_details.append((i + 1, "FAIL", str(e)))
+            finally:
+                sys.stdout = old_stdout
+                sys.stderr = old_stderr
 
     # Store summary for the report stage
     item._repeated_summary = (passes, times)
     item._repeated_run_details = run_details
+    if last_exception is not None:
+        item._repeated_last_exception = last_exception
 
-    # Determine final result
-    if passes < threshold:
-        raise last_exception
+    # For threshold-based tests, raise exception immediately if threshold not met
+    # (Statistical and Bayesian tests are evaluated in pytest_runtest_makereport)
+    if threshold is not None:
+        if passes < threshold and last_exception is not None:
+            raise last_exception
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -255,16 +383,39 @@ def pytest_runtest_makereport(item, call):
         n = marker.kwargs.get("n")
         times, n = _resolve_times_and_n(times, n)
 
-        threshold = marker.kwargs.get("threshold", 1) if marker else 1
+        threshold = marker.kwargs.get("threshold")
         null = marker.kwargs.get("H0")
         if null is None:
             null = marker.kwargs.get("null")
         ci = marker.kwargs.get("ci", 0.95)
+        posterior_threshold_probability = marker.kwargs.get(
+            "posterior_threshold_probability"
+        )
+        prior_alpha = marker.kwargs.get("prior_passes") or marker.kwargs.get(
+            "prior_alpha", 1
+        )
+        prior_beta = marker.kwargs.get("prior_failures") or marker.kwargs.get(
+            "prior_beta", 1
+        )
 
-        if null is not None:
+        if posterior_threshold_probability is not None:
+            # Use Bayesian test to determine pass/fail
+            _apply_bayesian_test(
+                report,
+                passes,
+                total,
+                posterior_threshold_probability,
+                prior_alpha,
+                prior_beta,
+            )
+        elif null is not None:
             # Use statistical test to determine pass/fail
             _apply_statistical_test(report, passes, total, null, ci)
         else:
+            # Use threshold (default to 1 if not specified)
+            if threshold is None:
+                threshold = 1
+
             # Override outcome based on threshold
             if passes >= threshold:
                 report.outcome = "passed"
@@ -281,6 +432,11 @@ def pytest_runtest_makereport(item, call):
         if hasattr(item, "_repeated_run_details"):
             report._repeated_run_details = item._repeated_run_details
             report.config = config
+        if hasattr(item, "_repeated_last_exception"):
+            report._repeated_last_exception = item._repeated_last_exception
+        # if report.outcome == "failed":
+        #     if hasattr(report, "_repeated_last_exception"):
+        #         raise report._repeated_last_exception
 
     return report
 
@@ -294,7 +450,14 @@ def pytest_report_teststatus(report, config):
         short = "+" if passes == total else "."
 
         # verbose string shown in -v/-vv
-        if hasattr(report, "_p_value"):
+        if hasattr(report, "_posterior_prob"):
+            posterior_prob = report._posterior_prob
+            verbose = (
+                f"PASSED (P(p>0.5|tests)={posterior_prob:.3f})"
+                if report.outcome == "passed"
+                else f"FAILED (P(p>0.5|tests)={posterior_prob:.3f})"
+            )
+        elif hasattr(report, "_p_value"):
             p_value = report._p_value
             verbose = (
                 f"PASSED (p={p_value:.3f})"
