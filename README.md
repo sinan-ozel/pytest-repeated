@@ -49,10 +49,9 @@ This is the test that is easiest to explain to stakeholders.
 ## Statistical (Frequentist) Usage
 
 ```
-@pytest.mark.repeated(null=.9, ci=0.95, n=200)
-def test_example_random():
-    import random
-    assert random.choice([True, False])  # may pass or fail
+@pytest.mark.repeated(null=0.9, ci=0.95, n=10)
+def test_succeed_50_percent():
+    assert random.random() < 0.5
 ```
 
 For those of us with frequentist background, this is a statistical test.
@@ -62,6 +61,39 @@ If this test passes, that means that the underlying (decorated) test (`test_exam
 Another way to think about this is: If the `null` had been correct (The test's chance of success is less thatn 90% in real operation), we would have less than 5% (1-CI) probability to have the test passed as many times as it did.
 Admittedly, this is confusing to express to many. However, rejecting a null is a roundabout way of expressing our level of confidence in a world of uncertainty, but it is a well-established and objective way.
 Use this in organizations that have an established understanding of probability.
+
+## Further Frwquentist Knowledge
+
+The test below will correctly fail to reject the null, and the test will fail:
+
+```
+@pytest.mark.repeated(null=0.9, ci=0.95, n=10)
+def test_succeed_50_percent():
+    assert random.random() < 0.5
+```
+
+Underlying truth: The code works only 50% of the time. (We know this becuase of the example, but in production code, we will not know the underlying truth.)
+Our condition to pass: The underlying should be working at least 90% of the time.
+Null HYpothesis: The underlying is working at least 90% of the time or less. (Null Hypothesis)
+Result: We (correctly) fail to reject the null at a 95% level of confidence.
+
+
+The following test will likely reject the null, and correctly pass, as desired.
+
+```
+@pytest.mark.repeated(null=0.9, ci=0.95, n=1000)
+    def test_succeed_95_percent():
+        assert random.random() < 0.95
+```
+
+The following test will likely incorrectly fail to reject the null (because of the low repetition), resulting in a Type II error.
+```
+```
+@pytest.mark.repeated(null=0.9, ci=0.95, n=50)
+    def test_succeed_95_percent():
+        assert random.random() < 0.95
+```
+
 
 ## Bayesian Usage
 ```

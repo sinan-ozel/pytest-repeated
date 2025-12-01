@@ -454,7 +454,7 @@ def test_z_test_statistical_fail_to_reject(isolated_env):
     random.seed(1729)
 
     @pytest.mark.repeated(null=0.9, ci=0.95, n=10)
-    def test_coin_flip():
+    def test_succeed_50_percent():
         assert random.random() < 0.5
     """
     )
@@ -479,6 +479,84 @@ def test_z_test_statistical_fail_to_reject(isolated_env):
     )
     # Should show p-value in output
     assert "(p=0.998" in stdout or "(p=0.998" in proc.stderr, stdout
+
+
+def test_z_test_statistical_reject_and_pass(isolated_env):
+    """Test statistical hypothesis testing with deterministic random seed."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    import random
+
+    random.seed(1729)
+
+    @pytest.mark.repeated(null=0.9, ci=0.95, n=200)
+    def test_succeed_95_percent():
+        assert random.random() < 0.95
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    print("=" * 80)
+    print("STDERR:")
+    print(proc.stderr)
+    print("=" * 80)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should show p-value in output
+    assert "(p=0.039" in stdout or "(p=0.039" in proc.stderr, stdout
+
+
+def test_z_test_statistical_reject_with_type2_error(isolated_env):
+    """Test statistical hypothesis testing with deterministic random seed."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    import random
+
+    random.seed(1729)
+
+    @pytest.mark.repeated(null=0.9, ci=0.95, n=150)
+    def test_succeed_95_percent():
+        assert random.random() < 0.95
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    print("=" * 80)
+    print("STDERR:")
+    print(proc.stderr)
+    print("=" * 80)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should show p-value in output
+    assert "(p=0.067" in stdout or "(p=0.067" in proc.stderr, stdout
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])

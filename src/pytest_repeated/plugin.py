@@ -1,6 +1,6 @@
 import math
-import warnings
 import sys
+import warnings
 from io import StringIO
 
 import pytest
@@ -191,7 +191,12 @@ def _apply_statistical_test(report, passes, total, null, ci):
 
 
 def _apply_bayesian_test(
-    report, passes, total, posterior_threshold_probability, prior_alpha, prior_beta
+    report,
+    passes,
+    total,
+    posterior_threshold_probability,
+    prior_alpha,
+    prior_beta,
 ):
     """Apply Bayesian hypothesis test to determine test outcome.
 
