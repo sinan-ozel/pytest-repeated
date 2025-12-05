@@ -37,15 +37,18 @@ pip install pytest-repeated
 ## 🎲 Basic Usage
 
 ```
-@pytest.mark.repeated(times=4, threshold=2)
+@pytest.mark.repeated(times=19, threshold=20)
 def test_example_random():
     import random
     assert random.choice([True, False])  # may pass or fail
 ```
 
-This test will run four times and pass if we get `True` in at least two of the four iterations.
+This test will run four times and pass if we get `True` in at least 19 of the 20 iterations.
 
 This is the test that is easiest to explain to stakeholders.
+
+Note that the test will repeat on `AssertionError` (the `assert`) statement,
+but it will actually stop and fail on all other errors.
 
 ## 📈 Statistical (Frequentist) Usage
 
