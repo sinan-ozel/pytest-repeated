@@ -49,6 +49,8 @@ This is the test that is easiest to explain to stakeholders.
 
 Note that the test will repeat on `AssertionError` (the `assert`) statement,
 but it will actually stop and fail on all other errors.
+These are all considered to be detereministic failures, caused by bugs.
+Use the `assert` statements to compare against outputs that are random variables (RCs) such as data science predictions or LLM-generated contents and their assessments.
 
 ## 📈 Statistical (Frequentist) Usage
 
