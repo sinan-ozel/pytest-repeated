@@ -333,7 +333,9 @@ def test_fail_with_error_verbosity_level_3(isolated_env):
     ), stdout
     # Should only show "Run 1:" and NOT "Run 2:", "Run 3:", etc.
     assert "Run 1:" in stdout, f"Expected 'Run 1:' in output\n{stdout}"
-    assert "Run 2:" not in stdout, f"Expected NO 'Run 2:' in output (should stop after first run)\n{stdout}"
+    assert (
+        "Run 2:" not in stdout
+    ), f"Expected NO 'Run 2:' in output (should stop after first run)\n{stdout}"
 
     assert "KeyError" in stdout or "KeyError" in proc.stderr, stdout
     assert (
@@ -373,17 +375,25 @@ def test_fail_with_error_after_first_test(isolated_env):
 
     # Test should fail immediately (not run all 5 times)
     assert proc.returncode != 0, (
-        "Test should fail with KeyError\n" + "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+        "Test should fail with KeyError\n"
+        + "STDOUT:\n"
+        + stdout
+        + "\nSTDERR:\n"
+        + proc.stderr
     )
 
     # Verify call_count only incremented once (test only ran once)
-    assert "CALL_COUNT=1" in stdout, f"Expected 'CALL_COUNT=1' in output\n{stdout}"
-    assert "CALL_COUNT=2" not in stdout, f"Expected NO 'CALL_COUNT=2' in output (should stop after first run)\n{stdout}"
+    assert (
+        "CALL_COUNT=1" in stdout
+    ), f"Expected 'CALL_COUNT=1' in output\n{stdout}"
+    assert (
+        "CALL_COUNT=2" not in stdout
+    ), f"Expected NO 'CALL_COUNT=2' in output (should stop after first run)\n{stdout}"
 
     # Should show summary with 1 run
-    assert "0 out of 1 runs passed" in stdout, (
-        f"Expected '0 out of 1 runs passed' in summary\n{stdout}"
-    )
+    assert (
+        "0 out of 1 runs passed" in stdout
+    ), f"Expected '0 out of 1 runs passed' in summary\n{stdout}"
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
