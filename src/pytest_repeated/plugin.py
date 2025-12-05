@@ -330,6 +330,9 @@ def pytest_runtest_call(item):
             except Exception as e:
                 last_exception = e
                 run_details.append((i + 1, "FAIL", str(e)))
+                # Stop immediately on non-AssertionError exceptions
+                if not isinstance(e, AssertionError):
+                    break
         else:
             # Suppress output from individual runs
             old_stdout = sys.stdout
@@ -343,12 +346,17 @@ def pytest_runtest_call(item):
             except Exception as e:
                 last_exception = e
                 run_details.append((i + 1, "FAIL", str(e)))
+                # Stop immediately on non-AssertionError exceptions
+                if not isinstance(e, AssertionError):
+                    break
             finally:
                 sys.stdout = old_stdout
                 sys.stderr = old_stderr
 
     # Store summary for the report stage
-    item._repeated_summary = (passes, times)
+    # Use actual number of runs (len of run_details) instead of planned times
+    actual_runs = len(run_details)
+    item._repeated_summary = (passes, actual_runs)
     item._repeated_run_details = run_details
     if last_exception is not None:
         item._repeated_last_exception = last_exception

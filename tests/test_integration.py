@@ -297,7 +297,7 @@ def test_threshold_fail_with_verbosity_level_3(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_fail_with_error_verbosity_level_3(isolated_env):
+def test_fail_with_error_verbosity_level_3(isolated_env):
     """Test that KeyError details are shown in run-by-run output."""
     base, env = isolated_env
 
@@ -327,14 +327,143 @@ def test_threshold_fail_with_error_verbosity_level_3(isolated_env):
     assert proc.returncode != 0, (
         "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
     )
-    assert "FAILED (0/5)" in stdout or "FAILED (0/5)" in proc.stderr, stdout
+    assert "FAILED (0/1)" in stdout, stdout
     assert (
         "'incorrect_key'" in stdout or "'incorrect_key'" in proc.stderr
     ), stdout
+    # Should only show "Run 1:" and NOT "Run 2:", "Run 3:", etc.
+    assert "Run 1:" in stdout, f"Expected 'Run 1:' in output\n{stdout}"
+    assert (
+        "Run 2:" not in stdout
+    ), f"Expected NO 'Run 2:' in output (should stop after first run)\n{stdout}"
+
     assert "KeyError" in stdout or "KeyError" in proc.stderr, stdout
     assert (
         "Run-by-run results:" in stdout or "Run-by-run results:" in proc.stderr
     ), stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_fail_with_error_after_first_test(isolated_env):
+    """Test that non-AssertionError exceptions stop execution after first run."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=4)
+    def test_flaky():
+        call_count["count"] += 1
+        print(f"CALL_COUNT={call_count['count']}")
+        # Always fails with KeyError
+        assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-vvv", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+
+    # Test should fail immediately (not run all 5 times)
+    assert proc.returncode != 0, (
+        "Test should fail with KeyError\n"
+        + "STDOUT:\n"
+        + stdout
+        + "\nSTDERR:\n"
+        + proc.stderr
+    )
+
+    # Verify call_count only incremented once (test only ran once)
+    assert (
+        "CALL_COUNT=1" in stdout
+    ), f"Expected 'CALL_COUNT=1' in output\n{stdout}"
+    assert (
+        "CALL_COUNT=2" not in stdout
+    ), f"Expected NO 'CALL_COUNT=2' in output (should stop after first run)\n{stdout}"
+
+    # Should show summary with 1 run
+    assert (
+        "0 out of 1 runs passed" in stdout
+    ), f"Expected '0 out of 1 runs passed' in summary\n{stdout}"
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_fail_with_error_verbosity_level_2(isolated_env):
+    """Test that KeyError details are shown in run-by-run output."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=4)
+    def test_flaky():
+        call_count["count"] += 1
+        # Always fails with KeyError
+        assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-vv", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    assert "FAILED (0/1)" in stdout, stdout
+    assert "KeyError" in stdout or "KeyError" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_fail_with_error_verbosity_level_1(isolated_env):
+    """Test that KeyError details are shown in run-by-run output."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=4)
+    def test_flaky():
+        call_count["count"] += 1
+        # Always fails with KeyError
+        assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    assert "(0/1)" in stdout, stdout
+    assert "KeyError" in stdout or "KeyError" in proc.stderr, stdout
 
 
 def test_z_test(isolated_env):
