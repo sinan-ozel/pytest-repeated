@@ -4,10 +4,35 @@ from textwrap import dedent
 import pytest
 
 
-@pytest.mark.test_id("base_repeated_marker_test")
-def test_repeated_marker_behavior(isolated_env):
-    base, env = isolated_env
+def create_test_file_and_run(isolated_env, pytest_code, pytest_args=None):
+    """Helper function to create a test file and run pytest on it.
 
+    Args:
+        isolated_env: Tuple of (base_path, env_dict) from isolated_env fixture
+        pytest_code: String containing the test code to write
+        pytest_args: List of pytest arguments (default: ["-v"])
+
+    Returns:
+        CompletedProcess object from subprocess.run
+    """
+    base, env = isolated_env
+    test_file = base / "test_sample.py"
+    test_file.write_text(pytest_code)
+
+    if pytest_args is None:
+        pytest_args = ["-v"]
+
+    proc = subprocess.run(
+        ["pytest"] + pytest_args + [str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    return proc
+
+
+@pytest.mark.depends(name="base_repeated_marker_test")
+def test_repeated_marker_behavior(isolated_env):
     PYTEST_CODE = dedent(
         """
     import pytest
@@ -17,15 +42,8 @@ def test_repeated_marker_behavior(isolated_env):
         return random.choice([True, False])
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, PYTEST_CODE)
 
     stdout = proc.stdout
     assert proc.returncode == 0, (

@@ -40,7 +40,7 @@ def test_bayesian_test(isolated_env):
     ), stdout
 
 
-@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+@pytest.mark.depends(on=["base_repeated_marker_test"])
 def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env):
     """Test that Bayesian testing raises error when success_rate_threshold is missing."""
     base, env = isolated_env
@@ -80,7 +80,7 @@ def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env):
     ), combined_output
 
 
-@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+@pytest.mark.depends(on=["base_repeated_marker_test"])
 def test_bayesian_test_with_custom_prior(isolated_env):
     """Test Bayesian hypothesis testing with custom prior parameters."""
     base, env = isolated_env
@@ -121,7 +121,7 @@ def test_bayesian_test_with_custom_prior(isolated_env):
     ), stdout
 
 
-@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+@pytest.mark.depends(on=["base_repeated_marker_test"])
 def test_bayesian_test_with_alternative_prior_names(isolated_env):
     """Test Bayesian hypothesis testing with prior_passes and prior_failures."""
     base, env = isolated_env
