@@ -155,7 +155,7 @@ def one_sided_proportion_test(r, n, N, alpha=0.05):
         }
 
 
-def _apply_statistical_test(report, passes, total, null, ci):
+def _apply_statistical_test(report, passes, total, null, ci, item):
     """Apply statistical hypothesis test to determine test outcome.
 
     Args:
@@ -164,13 +164,22 @@ def _apply_statistical_test(report, passes, total, null, ci):
         total: Total number of runs
         null: Null hypothesis proportion (H0)
         ci: Confidence interval level
+        item: The test item (to check for non-AssertionError)
     """
     test_result = one_sided_proportion_test(
         r=null, n=passes, N=total, alpha=1 - ci
     )
     p_value = test_result["p_value"]
 
-    if test_result["reject"]:
+    # Check if a non-AssertionError occurred
+    has_non_assertion_error = hasattr(
+        item, "_repeated_has_non_assertion_error"
+    ) and item._repeated_has_non_assertion_error
+
+    # Force failure if non-AssertionError occurred, otherwise use test result
+    if has_non_assertion_error:
+        report.outcome = "failed"
+    elif test_result["reject"]:
         report.outcome = "passed"
     else:
         report.outcome = "failed"
@@ -198,6 +207,7 @@ def _apply_bayesian_test(
     prior_alpha,
     prior_beta,
     success_rate_threshold,
+    item,
 ):
     """Apply Bayesian hypothesis test to determine test outcome.
 
@@ -209,6 +219,7 @@ def _apply_bayesian_test(
         prior_alpha: Prior successes (Beta parameter)
         prior_beta: Prior failures (Beta parameter)
         success_rate_threshold: Minimum success rate to test for (required)
+        item: The test item (to check for non-AssertionError)
     """
     if success_rate_threshold is None:
         raise ValueError(
@@ -229,7 +240,15 @@ def _apply_bayesian_test(
     )
     posterior_prob = test_result["posterior_prob"]
 
-    if test_result["passes"]:
+    # Check if a non-AssertionError occurred
+    has_non_assertion_error = hasattr(
+        item, "_repeated_has_non_assertion_error"
+    ) and item._repeated_has_non_assertion_error
+
+    # Force failure if non-AssertionError occurred, otherwise use test result
+    if has_non_assertion_error:
+        report.outcome = "failed"
+    elif test_result["passes"]:
         report.outcome = "passed"
     else:
         report.outcome = "failed"
@@ -360,6 +379,10 @@ def pytest_runtest_call(item):
     item._repeated_run_details = run_details
     if last_exception is not None:
         item._repeated_last_exception = last_exception
+        # Flag if the last exception was NOT an AssertionError
+        item._repeated_has_non_assertion_error = not isinstance(
+            last_exception, AssertionError
+        )
 
     # For threshold-based tests, raise exception immediately if threshold not met
     # (Statistical and Bayesian tests are evaluated in pytest_runtest_makereport)
@@ -435,17 +458,26 @@ def pytest_runtest_makereport(item, call):
                 prior_alpha,
                 prior_beta,
                 success_rate_threshold,
+                item,
             )
         elif null is not None:
             # Use statistical test to determine pass/fail
-            _apply_statistical_test(report, passes, total, null, ci)
+            _apply_statistical_test(report, passes, total, null, ci, item)
         else:
             # Use threshold (default to 1 if not specified)
             if threshold is None:
                 threshold = 1
 
+            # Check if a non-AssertionError occurred
+            has_non_assertion_error = hasattr(
+                item, "_repeated_has_non_assertion_error"
+            ) and item._repeated_has_non_assertion_error
+
             # Override outcome based on threshold
-            if passes >= threshold:
+            # BUT: if a non-AssertionError occurred, always fail
+            if has_non_assertion_error:
+                report.outcome = "failed"
+            elif passes >= threshold:
                 report.outcome = "passed"
             else:
                 report.outcome = "failed"

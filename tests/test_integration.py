@@ -344,7 +344,7 @@ def test_fail_with_error_verbosity_level_3(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_fail_with_error_after_first_test(isolated_env):
+def test_deterministic_fail_with_error_after_first_test(isolated_env):
     """Test that non-AssertionError exceptions stop execution after first run."""
     base, env = isolated_env
 
@@ -397,7 +397,7 @@ def test_fail_with_error_after_first_test(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_fail_with_error_verbosity_level_2(isolated_env):
+def test_deterministic_fail_with_error_verbosity_level_2(isolated_env):
     """Test that KeyError details are shown in run-by-run output."""
     base, env = isolated_env
 
@@ -432,7 +432,7 @@ def test_fail_with_error_verbosity_level_2(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_fail_with_error_verbosity_level_1(isolated_env):
+def test_deterministic_fail_with_error_verbosity_level_1(isolated_env):
     """Test that KeyError details are shown in run-by-run output."""
     base, env = isolated_env
 
@@ -464,6 +464,82 @@ def test_fail_with_error_verbosity_level_1(isolated_env):
     )
     assert "(0/1)" in stdout, stdout
     assert "KeyError" in stdout or "KeyError" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_deterministic_fail_with_error_verbosity_level_1(isolated_env):
+    """Test errors other than AssertionError cause failure even after some tries."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=1)
+    def test_flaky():
+        call_count["count"] += 1
+        # Fail with RuntimeError after the first two runs.
+        if call_count["count"] > 2:
+            raise RuntimeError("Deliberate RuntimeError after two runs")
+        assert call_count["count"] in [1, 2], f'Expected: {1, 2}, Got: {call_count["count"]}'
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    assert "(2/3)" in stdout, stdout
+    assert "RuntimeError" in stdout or "RuntimeError" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_deterministic_fail_with_error_verbosity_level_2(isolated_env):
+    """Test errors other than AssertionError cause failure even after some tries."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=1)
+    def test_flaky():
+        call_count["count"] += 1
+        # Fail with RuntimeError after the first two runs.
+        if call_count["count"] > 2:
+            raise RuntimeError("Deliberate RuntimeError after two runs")
+        assert call_count["count"] in [1, 2], f'Expected: {1, 2}, Got: {call_count["count"]}'
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    assert "FAILED (2/3)" in stdout, stdout
+    assert "RuntimeError" in stdout or "RuntimeError" in proc.stderr, stdout
+
+
 
 
 def test_z_test(isolated_env):
