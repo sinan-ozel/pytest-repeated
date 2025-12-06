@@ -225,3 +225,49 @@ def test_z_test_statistical_reject_with_type2_error(isolated_env):
     )
     # Should show p-value in output
     assert "(p=0.067" in stdout or "(p=0.067" in proc.stderr, stdout
+
+
+def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(isolated_env):
+    """Test statistical hypothesis testing with deterministic random seed."""
+    base, env = isolated_env
+
+    PYTEST_CODE = dedent(
+        """
+    import pytest
+    import random
+
+    random.seed(1729)
+
+    call_count = {"count": 0}
+
+    @pytest.mark.repeated(null=0.9, ci=0.95, n=200)
+    def test_succeed_95_percent():
+        call_count["count"] += 1
+        if call_count["count"] > 60:
+            raise RuntimeError("Deliberate RuntimeError after 60 runs")
+        assert random.random() < 0.95
+    """
+    )
+    test_file = base / "test_sample.py"
+    test_file.write_text(PYTEST_CODE)
+
+    proc = subprocess.run(
+        ["pytest", "-v", str(test_file)],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    stdout = proc.stdout
+    print(stdout)
+    print("=" * 80)
+    print("STDERR:")
+    print(proc.stderr)
+    print("=" * 80)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should show p-value in output
+    # Note that the p-value is high, because we wound up getting only 61 samples.
+    # TODO: Fix and change the sample size. The last test fails for a deterministic reason and does not count.
+    assert "(p=0.848" in stdout or "(p=0.848" in proc.stderr, stdout
