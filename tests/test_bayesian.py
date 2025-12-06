@@ -1,13 +1,7 @@
-import os
-import shutil
-from pathlib import Path
 import subprocess
-import tempfile
 from textwrap import dedent
 
 import pytest
-
-from .conftest import isolated_env
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
