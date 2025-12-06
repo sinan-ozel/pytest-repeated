@@ -23,5 +23,3 @@ def isolated_env():
     yield base, env
 
     shutil.rmtree(temp_dir, ignore_errors=True)
-
-
