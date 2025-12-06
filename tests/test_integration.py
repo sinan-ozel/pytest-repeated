@@ -1,12 +1,7 @@
-import os
-import shutil
-import tempfile
 import subprocess
-from pathlib import Path
 from textwrap import dedent
 
 import pytest
-from .conftest import isolated_env
 
 
 @pytest.mark.test_id("base_repeated_marker_test")

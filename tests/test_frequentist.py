@@ -3,8 +3,6 @@ from textwrap import dedent
 
 import pytest
 
-from .conftest import isolated_env
-
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
 def test_z_test(isolated_env):
