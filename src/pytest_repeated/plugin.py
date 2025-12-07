@@ -415,13 +415,9 @@ def pytest_runtest_makereport(item, call):
                     if status == "PASS":
                         details_lines.append(f"  Run {run_num}: {status}")
                     else:
-                        error_preview = (
-                            error[:80] + "..."
-                            if error and len(error) > 80
-                            else error
-                        )
+                        # At -vvv, show full error without truncation
                         details_lines.append(
-                            f"  Run {run_num}: {status} - {error_preview}"
+                            f"  Run {run_num}: {status} - {error}"
                         )
                 report.sections.append(
                     ("repeated details", "\n".join(details_lines))
@@ -559,9 +555,5 @@ def pytest_runtest_logreport(report):
                     if status == "PASS":
                         tw.line(f"  Run {run_num}: {status}")
                     else:
-                        error_preview = (
-                            error[:80] + "..."
-                            if error and len(error) > 80
-                            else error
-                        )
-                        tw.line(f"  Run {run_num}: {status} - {error_preview}")
+                        # At -vvv, show full error without truncation
+                        tw.line(f"  Run {run_num}: {status} - {error}")
