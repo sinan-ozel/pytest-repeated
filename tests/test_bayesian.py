@@ -32,7 +32,9 @@ def test_bayesian_test(isolated_env, create_test_file_and_run):
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
-def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env, create_test_file_and_run):
+def test_bayesian_test_missing_kwarg_success_rate_threshold(
+    isolated_env, create_test_file_and_run
+):
     """Test that Bayesian testing raises error when success_rate_threshold is missing."""
     pytest_code = dedent(
         """
@@ -63,7 +65,9 @@ def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env, create
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
-def test_bayesian_test_with_custom_prior(isolated_env, create_test_file_and_run):
+def test_bayesian_test_with_custom_prior(
+    isolated_env, create_test_file_and_run
+):
     """Test Bayesian hypothesis testing with custom prior parameters."""
     pytest_code = dedent(
         """
@@ -95,7 +99,9 @@ def test_bayesian_test_with_custom_prior(isolated_env, create_test_file_and_run)
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
-def test_bayesian_test_with_alternative_prior_names(isolated_env, create_test_file_and_run):
+def test_bayesian_test_with_alternative_prior_names(
+    isolated_env, create_test_file_and_run
+):
     """Test Bayesian hypothesis testing with prior_passes and prior_failures."""
     pytest_code = dedent(
         """

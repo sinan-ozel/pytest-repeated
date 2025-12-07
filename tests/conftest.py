@@ -20,6 +20,7 @@ def create_test_file_and_run():
     Returns:
         CompletedProcess object from subprocess.run
     """
+
     def _create_and_run(isolated_env, pytest_code, pytest_args=None):
         base, env = isolated_env
         test_file = base / "test_sample.py"

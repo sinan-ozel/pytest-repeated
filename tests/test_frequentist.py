@@ -83,7 +83,9 @@ def test_z_test_alternative_kwargs(isolated_env, create_test_file_and_run):
     assert "exact_binomial" in stdout or "exact_binomial" in proc.stderr, stdout
 
 
-def test_z_test_statistical_fail_to_reject(isolated_env, create_test_file_and_run):
+def test_z_test_statistical_fail_to_reject(
+    isolated_env, create_test_file_and_run
+):
     """Test statistical hypothesis testing with deterministic random seed."""
     pytest_code = dedent(
         """
@@ -113,7 +115,9 @@ def test_z_test_statistical_fail_to_reject(isolated_env, create_test_file_and_ru
     assert "(p=0.998" in stdout or "(p=0.998" in proc.stderr, stdout
 
 
-def test_z_test_statistical_reject_and_pass(isolated_env, create_test_file_and_run):
+def test_z_test_statistical_reject_and_pass(
+    isolated_env, create_test_file_and_run
+):
     """Test statistical hypothesis testing with deterministic random seed."""
     pytest_code = dedent(
         """
@@ -143,7 +147,9 @@ def test_z_test_statistical_reject_and_pass(isolated_env, create_test_file_and_r
     assert "(p=0.039" in stdout or "(p=0.039" in proc.stderr, stdout
 
 
-def test_z_test_statistical_reject_with_type2_error(isolated_env, create_test_file_and_run):
+def test_z_test_statistical_reject_with_type2_error(
+    isolated_env, create_test_file_and_run
+):
     """Test statistical hypothesis testing with deterministic random seed."""
     pytest_code = dedent(
         """
@@ -173,7 +179,9 @@ def test_z_test_statistical_reject_with_type2_error(isolated_env, create_test_fi
     assert "(p=0.067" in stdout or "(p=0.067" in proc.stderr, stdout
 
 
-def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(isolated_env, create_test_file_and_run):
+def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(
+    isolated_env, create_test_file_and_run
+):
     """Test statistical hypothesis testing with deterministic random seed."""
     pytest_code = dedent(
         """

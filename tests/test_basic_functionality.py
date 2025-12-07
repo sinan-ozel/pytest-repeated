@@ -92,7 +92,9 @@ def test_threshold_fail(isolated_env, create_test_file_and_run):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_met_with_final_failure(isolated_env, create_test_file_and_run):
+def test_threshold_met_with_final_failure(
+    isolated_env, create_test_file_and_run
+):
     """Test that threshold met results in PASSED even if last run fails."""
     pytest_code = dedent(
         """
@@ -138,7 +140,9 @@ def test_threshold_0_pass(isolated_env, create_test_file_and_run):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_pass_with_verbosity_level_1_threshold_fail(isolated_env, create_test_file_and_run):
+def test_threshold_pass_with_verbosity_level_1_threshold_fail(
+    isolated_env, create_test_file_and_run
+):
     pytest_code = dedent(
         """
     import pytest
@@ -162,7 +166,9 @@ def test_threshold_pass_with_verbosity_level_1_threshold_fail(isolated_env, crea
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_pass_with_verbosity_level_1_threshold_pass(isolated_env, create_test_file_and_run):
+def test_threshold_pass_with_verbosity_level_1_threshold_pass(
+    isolated_env, create_test_file_and_run
+):
     pytest_code = dedent(
         """
     import pytest
@@ -186,7 +192,9 @@ def test_threshold_pass_with_verbosity_level_1_threshold_pass(isolated_env, crea
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_pass_with_verbosity_level_1_full_pass(isolated_env, create_test_file_and_run):
+def test_threshold_pass_with_verbosity_level_1_full_pass(
+    isolated_env, create_test_file_and_run
+):
     pytest_code = dedent(
         """
     import pytest
@@ -209,7 +217,9 @@ def test_threshold_pass_with_verbosity_level_1_full_pass(isolated_env, create_te
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_pass_with_verbosity_level_2(isolated_env, create_test_file_and_run):
+def test_threshold_pass_with_verbosity_level_2(
+    isolated_env, create_test_file_and_run
+):
     pytest_code = dedent(
         """
     import pytest
@@ -233,7 +243,9 @@ def test_threshold_pass_with_verbosity_level_2(isolated_env, create_test_file_an
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_pass_with_verbosity_level_3(isolated_env, create_test_file_and_run):
+def test_threshold_pass_with_verbosity_level_3(
+    isolated_env, create_test_file_and_run
+):
     pytest_code = dedent(
         """
     import pytest
@@ -260,7 +272,9 @@ def test_threshold_pass_with_verbosity_level_3(isolated_env, create_test_file_an
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_fail_with_verbosity_level_3(isolated_env, create_test_file_and_run):
+def test_threshold_fail_with_verbosity_level_3(
+    isolated_env, create_test_file_and_run
+):
     pytest_code = dedent(
         """
     import pytest
@@ -291,7 +305,9 @@ def test_threshold_fail_with_verbosity_level_3(isolated_env, create_test_file_an
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_fail_with_error_verbosity_level_3(isolated_env, create_test_file_and_run):
+def test_fail_with_error_verbosity_level_3(
+    isolated_env, create_test_file_and_run
+):
     """Test that KeyError details are shown in run-by-run output."""
     pytest_code = dedent(
         """
@@ -329,7 +345,9 @@ def test_fail_with_error_verbosity_level_3(isolated_env, create_test_file_and_ru
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_error_after_first_test(isolated_env, create_test_file_and_run):
+def test_deterministic_fail_with_error_after_first_test(
+    isolated_env, create_test_file_and_run
+):
     """Test that non-AssertionError exceptions stop execution after first run."""
     pytest_code = dedent(
         """
@@ -373,7 +391,9 @@ def test_deterministic_fail_with_error_after_first_test(isolated_env, create_tes
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_error_verbosity_level_2(isolated_env, create_test_file_and_run):
+def test_deterministic_fail_with_error_verbosity_level_2(
+    isolated_env, create_test_file_and_run
+):
     """Test that KeyError details are shown in run-by-run output."""
     pytest_code = dedent(
         """
@@ -399,7 +419,9 @@ def test_deterministic_fail_with_error_verbosity_level_2(isolated_env, create_te
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_error_verbosity_level_1(isolated_env, create_test_file_and_run):
+def test_deterministic_fail_with_error_verbosity_level_1(
+    isolated_env, create_test_file_and_run
+):
     """Test that KeyError details are shown in run-by-run output."""
     pytest_code = dedent(
         """
@@ -425,7 +447,9 @@ def test_deterministic_fail_with_error_verbosity_level_1(isolated_env, create_te
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_runtime_error_after_success(isolated_env, create_test_file_and_run):
+def test_deterministic_fail_with_runtime_error_after_success(
+    isolated_env, create_test_file_and_run
+):
     """Test errors other than AssertionError cause failure even after some tries."""
     pytest_code = dedent(
         """
@@ -453,7 +477,9 @@ def test_deterministic_fail_with_runtime_error_after_success(isolated_env, creat
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_runtime_error_after_success_v2(isolated_env, create_test_file_and_run):
+def test_deterministic_fail_with_runtime_error_after_success_v2(
+    isolated_env, create_test_file_and_run
+):
     """Test errors other than AssertionError cause failure even after some tries."""
     pytest_code = dedent(
         """

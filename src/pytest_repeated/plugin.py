@@ -172,9 +172,10 @@ def _apply_statistical_test(report, passes, total, null, ci, item):
     p_value = test_result["p_value"]
 
     # Check if a non-AssertionError occurred
-    has_non_assertion_error = hasattr(
-        item, "_repeated_has_non_assertion_error"
-    ) and item._repeated_has_non_assertion_error
+    has_non_assertion_error = (
+        hasattr(item, "_repeated_has_non_assertion_error")
+        and item._repeated_has_non_assertion_error
+    )
 
     # Force failure if non-AssertionError occurred, otherwise use test result
     if has_non_assertion_error:
@@ -241,9 +242,10 @@ def _apply_bayesian_test(
     posterior_prob = test_result["posterior_prob"]
 
     # Check if a non-AssertionError occurred
-    has_non_assertion_error = hasattr(
-        item, "_repeated_has_non_assertion_error"
-    ) and item._repeated_has_non_assertion_error
+    has_non_assertion_error = (
+        hasattr(item, "_repeated_has_non_assertion_error")
+        and item._repeated_has_non_assertion_error
+    )
 
     # Force failure if non-AssertionError occurred, otherwise use test result
     if has_non_assertion_error:
@@ -469,9 +471,10 @@ def pytest_runtest_makereport(item, call):
                 threshold = 1
 
             # Check if a non-AssertionError occurred
-            has_non_assertion_error = hasattr(
-                item, "_repeated_has_non_assertion_error"
-            ) and item._repeated_has_non_assertion_error
+            has_non_assertion_error = (
+                hasattr(item, "_repeated_has_non_assertion_error")
+                and item._repeated_has_non_assertion_error
+            )
 
             # Override outcome based on threshold
             # BUT: if a non-AssertionError occurred, always fail
