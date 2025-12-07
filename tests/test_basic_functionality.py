@@ -531,13 +531,13 @@ def test_long_error_message_not_truncated_at_verbosity_3(
     )
 
     # The full 150-character message should appear in the run-by-run results
-    assert long_message in stdout, (
-        f"Expected full error message ({len(long_message)} chars) in output at -vvv\n{stdout}"
-    )
+    assert (
+        long_message in stdout
+    ), f"Expected full error message ({len(long_message)} chars) in output at -vvv\n{stdout}"
     # Should NOT have truncation marker
-    assert "..." not in stdout or "Run-by-run results:" in stdout, (
-        "Error message should not be truncated at -vvv"
-    )
+    assert (
+        "..." not in stdout or "Run-by-run results:" in stdout
+    ), "Error message should not be truncated at -vvv"
     assert "Run-by-run results:" in stdout
 
 
