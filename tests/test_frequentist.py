@@ -5,11 +5,9 @@ import pytest
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
-def test_z_test(isolated_env):
+def test_z_test(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with H0 parameter."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     @pytest.mark.repeated(H0=0.9, ci=0.95, times=3)
@@ -17,15 +15,8 @@ def test_z_test(isolated_env):
         assert True
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -40,11 +31,9 @@ def test_z_test(isolated_env):
     assert "exact_binomial" in stdout or "exact_binomial" in proc.stderr, stdout
 
 
-def test_threshold_pass_equal(isolated_env):
+def test_threshold_pass_equal(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with H0 parameter."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     @pytest.mark.repeated(H0=0.9, ci=0.95, n=3)
@@ -52,15 +41,8 @@ def test_threshold_pass_equal(isolated_env):
         assert True
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -75,11 +57,9 @@ def test_threshold_pass_equal(isolated_env):
     assert "exact_binomial" in stdout or "exact_binomial" in proc.stderr, stdout
 
 
-def test_z_test_alternative_kwargs(isolated_env):
+def test_z_test_alternative_kwargs(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with H0 parameter using alternative kwarg names."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     @pytest.mark.repeated(null=0.9, ci=0.95, n=3)
@@ -87,15 +67,8 @@ def test_z_test_alternative_kwargs(isolated_env):
         assert True
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -110,11 +83,9 @@ def test_z_test_alternative_kwargs(isolated_env):
     assert "exact_binomial" in stdout or "exact_binomial" in proc.stderr, stdout
 
 
-def test_z_test_statistical_fail_to_reject(isolated_env):
+def test_z_test_statistical_fail_to_reject(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with deterministic random seed."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     import random
@@ -126,15 +97,8 @@ def test_z_test_statistical_fail_to_reject(isolated_env):
         assert random.random() < 0.5
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-vv", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vv"])
 
     stdout = proc.stdout
     print(stdout)
@@ -149,11 +113,9 @@ def test_z_test_statistical_fail_to_reject(isolated_env):
     assert "(p=0.998" in stdout or "(p=0.998" in proc.stderr, stdout
 
 
-def test_z_test_statistical_reject_and_pass(isolated_env):
+def test_z_test_statistical_reject_and_pass(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with deterministic random seed."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     import random
@@ -165,15 +127,8 @@ def test_z_test_statistical_reject_and_pass(isolated_env):
         assert random.random() < 0.95
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -188,11 +143,9 @@ def test_z_test_statistical_reject_and_pass(isolated_env):
     assert "(p=0.039" in stdout or "(p=0.039" in proc.stderr, stdout
 
 
-def test_z_test_statistical_reject_with_type2_error(isolated_env):
+def test_z_test_statistical_reject_with_type2_error(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with deterministic random seed."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     import random
@@ -204,15 +157,8 @@ def test_z_test_statistical_reject_with_type2_error(isolated_env):
         assert random.random() < 0.95
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -227,11 +173,9 @@ def test_z_test_statistical_reject_with_type2_error(isolated_env):
     assert "(p=0.067" in stdout or "(p=0.067" in proc.stderr, stdout
 
 
-def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(isolated_env):
+def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with deterministic random seed."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     import random
@@ -248,15 +192,8 @@ def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(isol
         assert random.random() < 0.95
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)

@@ -4,36 +4,9 @@ from textwrap import dedent
 import pytest
 
 
-def create_test_file_and_run(isolated_env, pytest_code, pytest_args=None):
-    """Helper function to create a test file and run pytest on it.
-
-    Args:
-        isolated_env: Tuple of (base_path, env_dict) from isolated_env fixture
-        pytest_code: String containing the test code to write
-        pytest_args: List of pytest arguments (default: ["-v"])
-
-    Returns:
-        CompletedProcess object from subprocess.run
-    """
-    base, env = isolated_env
-    test_file = base / "test_sample.py"
-    test_file.write_text(pytest_code)
-
-    if pytest_args is None:
-        pytest_args = ["-v"]
-
-    proc = subprocess.run(
-        ["pytest"] + pytest_args + [str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-    return proc
-
-
 @pytest.mark.depends(name="base_repeated_marker_test")
-def test_repeated_marker_behavior(isolated_env):
-    PYTEST_CODE = dedent(
+def test_repeated_marker_behavior(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
         """
     import pytest
     @pytest.mark.repeated(times=5, threshold=2)
@@ -43,7 +16,7 @@ def test_repeated_marker_behavior(isolated_env):
     """
     )
 
-    proc = create_test_file_and_run(isolated_env, PYTEST_CODE)
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     assert proc.returncode == 0, (
@@ -53,10 +26,8 @@ def test_repeated_marker_behavior(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_pass_equal(isolated_env):
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+def test_threshold_pass_equal(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -66,15 +37,8 @@ def test_threshold_pass_equal(isolated_env):
         assert call_count["count"] > 3
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     assert proc.returncode == 0, (
@@ -84,10 +48,8 @@ def test_threshold_pass_equal(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_pass_gt(isolated_env):
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+def test_threshold_pass_gt(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -97,15 +59,8 @@ def test_threshold_pass_gt(isolated_env):
         assert call_count["count"] > 2
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     assert proc.returncode == 0, (
@@ -115,10 +70,8 @@ def test_threshold_pass_gt(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_fail(isolated_env):
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+def test_threshold_fail(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -128,15 +81,8 @@ def test_threshold_fail(isolated_env):
         assert call_count["count"] > 4
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     assert proc.returncode != 0, (
@@ -146,11 +92,9 @@ def test_threshold_fail(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_met_with_final_failure(isolated_env):
+def test_threshold_met_with_final_failure(isolated_env, create_test_file_and_run):
     """Test that threshold met results in PASSED even if last run fails."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -161,15 +105,8 @@ def test_threshold_met_with_final_failure(isolated_env):
         assert call_count["count"] in [1, 3]
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     # Should PASS because 2/5 >= threshold of 2, even though last run failed
@@ -180,10 +117,8 @@ def test_threshold_met_with_final_failure(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_0_pass(isolated_env):
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+def test_threshold_0_pass(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -192,15 +127,8 @@ def test_threshold_0_pass(isolated_env):
         assert False
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     assert proc.returncode == 0, (
@@ -210,10 +138,8 @@ def test_threshold_0_pass(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_pass_with_verbosity_level_3(isolated_env):
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+def test_threshold_pass_with_verbosity_level_2(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -224,15 +150,32 @@ def test_threshold_pass_with_verbosity_level_3(isolated_env):
         assert call_count["count"] in [1, 3]
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-vvv", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
     )
+    assert "PASSED (2/5)" in stdout or "PASSED (2/5)" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_threshold_pass_with_verbosity_level_3(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=2)
+    def test_flaky():
+        call_count["count"] += 1
+        # Passes on runs 1 and 3, fails on runs 2, 4, 5
+        assert call_count["count"] in [1, 3]
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
     stdout = proc.stdout
     print(stdout)
@@ -246,10 +189,8 @@ def test_threshold_pass_with_verbosity_level_3(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_threshold_fail_with_verbosity_level_3(isolated_env):
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+def test_threshold_fail_with_verbosity_level_3(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -260,15 +201,8 @@ def test_threshold_fail_with_verbosity_level_3(isolated_env):
         assert call_count["count"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-vvv", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
     stdout = proc.stdout
     print(stdout)
@@ -286,11 +220,9 @@ def test_threshold_fail_with_verbosity_level_3(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_fail_with_error_verbosity_level_3(isolated_env):
+def test_fail_with_error_verbosity_level_3(isolated_env, create_test_file_and_run):
     """Test that KeyError details are shown in run-by-run output."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -301,15 +233,8 @@ def test_fail_with_error_verbosity_level_3(isolated_env):
         assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-vvv", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
     stdout = proc.stdout
     print(stdout)
@@ -333,11 +258,9 @@ def test_fail_with_error_verbosity_level_3(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_error_after_first_test(isolated_env):
+def test_deterministic_fail_with_error_after_first_test(isolated_env, create_test_file_and_run):
     """Test that non-AssertionError exceptions stop execution after first run."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -349,15 +272,8 @@ def test_deterministic_fail_with_error_after_first_test(isolated_env):
         assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-vvv", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
     stdout = proc.stdout
     print(stdout)
@@ -386,11 +302,9 @@ def test_deterministic_fail_with_error_after_first_test(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_error_verbosity_level_2(isolated_env):
+def test_deterministic_fail_with_error_verbosity_level_2(isolated_env, create_test_file_and_run):
     """Test that KeyError details are shown in run-by-run output."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -401,15 +315,8 @@ def test_deterministic_fail_with_error_verbosity_level_2(isolated_env):
         assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-vv", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vv"])
 
     stdout = proc.stdout
     print(stdout)
@@ -421,11 +328,9 @@ def test_deterministic_fail_with_error_verbosity_level_2(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_error_verbosity_level_1(isolated_env):
+def test_deterministic_fail_with_error_verbosity_level_1(isolated_env, create_test_file_and_run):
     """Test that KeyError details are shown in run-by-run output."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -436,15 +341,8 @@ def test_deterministic_fail_with_error_verbosity_level_1(isolated_env):
         assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -456,11 +354,9 @@ def test_deterministic_fail_with_error_verbosity_level_1(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_error_verbosity_level_1(isolated_env):
+def test_deterministic_fail_with_runtime_error_after_success(isolated_env, create_test_file_and_run):
     """Test errors other than AssertionError cause failure even after some tries."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -473,15 +369,8 @@ def test_deterministic_fail_with_error_verbosity_level_1(isolated_env):
         assert call_count["count"] in [1, 2], f'Expected: {1, 2}, Got: {call_count["count"]}'
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -493,11 +382,9 @@ def test_deterministic_fail_with_error_verbosity_level_1(isolated_env):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
-def test_deterministic_fail_with_error_verbosity_level_2(isolated_env):
+def test_deterministic_fail_with_runtime_error_after_success_v2(isolated_env, create_test_file_and_run):
     """Test errors other than AssertionError cause failure even after some tries."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     call_count = {"count": 0}
@@ -510,15 +397,8 @@ def test_deterministic_fail_with_error_verbosity_level_2(isolated_env):
         assert call_count["count"] in [1, 2], f'Expected: {1, 2}, Got: {call_count["count"]}'
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)

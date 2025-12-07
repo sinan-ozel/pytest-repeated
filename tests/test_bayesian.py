@@ -5,11 +5,9 @@ import pytest
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
-def test_bayesian_test(isolated_env):
+def test_bayesian_test(isolated_env, create_test_file_and_run):
     """Test Bayesian hypothesis testing with posterior_threshold_probability parameter."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     @pytest.mark.repeated(times=10, posterior_threshold_probability=0.95, success_rate_threshold=0.7)
@@ -17,15 +15,8 @@ def test_bayesian_test(isolated_env):
         assert True
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -41,11 +32,9 @@ def test_bayesian_test(isolated_env):
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
-def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env):
+def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env, create_test_file_and_run):
     """Test that Bayesian testing raises error when success_rate_threshold is missing."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     @pytest.mark.repeated(times=10, posterior_threshold_probability=0.95)
@@ -53,15 +42,8 @@ def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env):
         assert True
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     stderr = proc.stderr
@@ -81,11 +63,9 @@ def test_bayesian_test_missing_kwarg_success_rate_threshold(isolated_env):
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
-def test_bayesian_test_with_custom_prior(isolated_env):
+def test_bayesian_test_with_custom_prior(isolated_env, create_test_file_and_run):
     """Test Bayesian hypothesis testing with custom prior parameters."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     @pytest.mark.repeated(
@@ -101,15 +81,8 @@ def test_bayesian_test_with_custom_prior(isolated_env):
         assert random.random() < 0.6
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
@@ -122,11 +95,9 @@ def test_bayesian_test_with_custom_prior(isolated_env):
 
 
 @pytest.mark.depends(on=["base_repeated_marker_test"])
-def test_bayesian_test_with_alternative_prior_names(isolated_env):
+def test_bayesian_test_with_alternative_prior_names(isolated_env, create_test_file_and_run):
     """Test Bayesian hypothesis testing with prior_passes and prior_failures."""
-    base, env = isolated_env
-
-    PYTEST_CODE = dedent(
+    pytest_code = dedent(
         """
     import pytest
     @pytest.mark.repeated(
@@ -140,15 +111,8 @@ def test_bayesian_test_with_alternative_prior_names(isolated_env):
         assert True
     """
     )
-    test_file = base / "test_sample.py"
-    test_file.write_text(PYTEST_CODE)
 
-    proc = subprocess.run(
-        ["pytest", "-v", str(test_file)],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    proc = create_test_file_and_run(isolated_env, pytest_code)
 
     stdout = proc.stdout
     print(stdout)
