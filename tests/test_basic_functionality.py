@@ -504,3 +504,70 @@ def test_deterministic_fail_with_runtime_error_after_success_v2(
     )
     assert "FAILED (2/3)" in stdout, stdout
     assert "RuntimeError" in stdout or "RuntimeError" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_long_error_message_not_truncated_at_verbosity_3(
+    isolated_env, create_test_file_and_run
+):
+    """Test that long error messages are NOT truncated at verbosity level 3 (-vvv)."""
+    # Create a very long error message (over 100 characters)
+    long_message = "A" * 150
+    pytest_code = dedent(
+        f"""
+    import pytest
+    @pytest.mark.repeated(times=2, threshold=2)
+    def test_with_long_error():
+        raise ValueError("{long_message}")
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+
+    # The full 150-character message should appear in the run-by-run results
+    assert long_message in stdout, (
+        f"Expected full error message ({len(long_message)} chars) in output at -vvv\n{stdout}"
+    )
+    # Should NOT have truncation marker
+    assert "..." not in stdout or "Run-by-run results:" in stdout, (
+        "Error message should not be truncated at -vvv"
+    )
+    assert "Run-by-run results:" in stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_no_run_by_run_output_at_verbosity_2(
+    isolated_env, create_test_file_and_run
+):
+    """Test that run-by-run results are NOT shown at verbosity level 2 (-vv)."""
+    # Create a long error message
+    long_message = "B" * 150
+    pytest_code = dedent(
+        f"""
+    import pytest
+    @pytest.mark.repeated(times=3, threshold=3)
+    def test_with_long_error():
+        raise ValueError("{long_message}")
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vv"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+
+    # At -vv, run-by-run results should NOT be shown
+    assert "Run-by-run results:" not in stdout, (
+        "Run-by-run results should only appear at -vvv, not at -vv\n" + stdout
+    )
+    # The summary should still be present
+    assert "0 out of 1 runs passed" in stdout or "(0/1)" in stdout
