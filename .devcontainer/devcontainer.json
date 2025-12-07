@@ -25,6 +25,8 @@
         "python.defaultInterpreterPath": "/usr/local/bin/python"
       },
       "extensions": [
+        "github.copilot",
+        "github.copilot-chat",
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-toolsai.jupyter",
