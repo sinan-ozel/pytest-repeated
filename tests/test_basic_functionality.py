@@ -138,6 +138,77 @@ def test_threshold_0_pass(isolated_env, create_test_file_and_run):
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_threshold_pass_with_verbosity_level_1_threshold_fail(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=4)
+    def test_flaky():
+        call_count["count"] += 1
+        # Passes on runs 1 and 3, fails on runs 2, 4, 5
+        assert call_count["count"] in [1, 3]
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    assert "(2/5)" in stdout or "(2/5)" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_threshold_pass_with_verbosity_level_1_threshold_pass(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=5, threshold=2)
+    def test_flaky():
+        call_count["count"] += 1
+        # Passes on runs 1 and 3, fails on runs 2, 4, 5
+        assert call_count["count"] in [1, 3]
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    assert "(2/5)" in stdout or "(2/5)" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_threshold_pass_with_verbosity_level_1_full_pass(isolated_env, create_test_file_and_run):
+    pytest_code = dedent(
+        """
+    import pytest
+
+    @pytest.mark.repeated(times=5, threshold=2)
+    def test_always_pass():
+        assert True
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    assert "(5/5)" in stdout or "(5/5)" in proc.stderr, stdout
+    # assert "PASS" not in stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
 def test_threshold_pass_with_verbosity_level_2(isolated_env, create_test_file_and_run):
     pytest_code = dedent(
         """
@@ -151,7 +222,7 @@ def test_threshold_pass_with_verbosity_level_2(isolated_env, create_test_file_an
     """
     )
 
-    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vv"])
 
     stdout = proc.stdout
     print(stdout)
