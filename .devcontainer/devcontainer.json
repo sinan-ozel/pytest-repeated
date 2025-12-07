@@ -1,5 +1,5 @@
 {
-  "name": "PyPI Module Development Container",
+  "name": "pytest-repeated",
   "dockerComposeFile": [
     "docker-compose.yaml"
   ],
