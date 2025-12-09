@@ -571,3 +571,74 @@ def test_no_run_by_run_output_at_verbosity_2(
     )
     # The summary should still be present
     assert "0 out of 1 runs passed" in stdout or "(0/1)" in stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_run_by_run_output_at_verbosity_3(
+    isolated_env, create_test_file_and_run
+):
+    """Test that run-by-run results are shown at verbosity level 3 (-vvv)."""
+    # Create a long error message
+    long_message = "B" * 150
+    pytest_code = dedent(
+        f"""
+    import pytest
+    @pytest.mark.repeated(times=3, threshold=0)
+    def test_with_long_error():
+        raise ValueError("{long_message}")
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode != 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+
+    assert "ValueError" in stdout or "ValueError" in proc.stderr, stdout
+    assert (
+        "Run-by-run results:" in stdout or "Run-by-run results:" in proc.stderr
+    ), stdout
+    assert long_message in stdout or long_message in proc.stderr, stdout
+    assert long_message in stdout or long_message in proc.stderr, stdout
+    # The summary should still be present
+    assert "0 out of 1 runs passed" in stdout or "(0/1)" in stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_assertion_error_run_by_run_output_at_verbosity_3(
+    isolated_env, create_test_file_and_run
+):
+    """Test that run-by-run results are shown at verbosity level 3 (-vvv)."""
+    # Create a long error message
+    long_message = "C" * 150
+    pytest_code = dedent(
+        f"""
+    import pytest
+    @pytest.mark.repeated(times=3, threshold=0)
+    def test_with_long_error():
+        assert False, "{long_message}"
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+
+    # Verify the error message (assert False) appears
+    assert "assert False" in stdout or "assert False" in proc.stderr, stdout
+    assert (
+        "Run-by-run results:" in stdout or "Run-by-run results:" in proc.stderr
+    ), stdout
+    # Verify the full long error message appears (not truncated)
+    assert (
+        long_message in stdout or long_message in proc.stderr
+    ), f"Expected full error message '{long_message}' in output"
+    # The summary should still be present
+    assert "0 out of 3 runs passed" in stdout or "(0/3)" in stdout
