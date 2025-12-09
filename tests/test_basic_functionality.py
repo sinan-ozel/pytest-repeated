@@ -601,12 +601,8 @@ def test_run_by_run_output_at_verbosity_3(
     assert (
         "Run-by-run results:" in stdout or "Run-by-run results:" in proc.stderr
     ), stdout
-    assert (
-        long_message in stdout or long_message in proc.stderr
-    ), stdout
-    assert (
-        long_message in stdout or long_message in proc.stderr
-    ), stdout
+    assert long_message in stdout or long_message in proc.stderr, stdout
+    assert long_message in stdout or long_message in proc.stderr, stdout
     # The summary should still be present
     assert "0 out of 1 runs passed" in stdout or "(0/1)" in stdout
 
