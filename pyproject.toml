@@ -38,6 +38,11 @@ dev = [
     "docformatter>=1.7.5",    # For formatting docstrings
 ]
 
+docs = [
+    "mkdocs-material>=9.0.0", # Material theme for MkDocs
+    "mkdocstrings[python]>=0.24.0",  # API documentation from docstrings
+]
+
 publish = [
     "packaging>=25.0",
 ]

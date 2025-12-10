@@ -10,6 +10,8 @@ This is a statistical unit testing plugin for pytest. 📊
 It repeats tests and pass if the underlying test passes a number of times out of a total,
 or it passes by rejecting the null hypothesis of a one-sided proportion test.
 
+📚 **[Full Documentation](https://sinan-ozel.github.io/pytest-repeated/)** | [Quick Start](#-installation) | [Examples](#-usage)
+
 ## Purpose: 🔄📊
 I want to leverage `pytest` for model evaluation in a way that can be readily incorporated into CI/CD flows.
 

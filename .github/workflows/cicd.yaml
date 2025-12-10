@@ -168,6 +168,8 @@ jobs:
       contents: write
     needs: [test, lint, detect_changes]
     if: needs.detect_changes.outputs.changed == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.event.pull_request.merged == true)  # Only run on push to main or merge to main
+    outputs:
+      is_stable: ${{ steps.set-version.outputs.is_stable }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -251,8 +253,61 @@ jobs:
       - name: Publish to PyPI via Trusted Publisher
         uses: pypa/gh-action-pypi-publish@release/v1
 
+      # TODO: Refactor this tagging step into its own job.
       - name: Tag Stable Release
         if: steps.set-version.outputs.is_stable == 'true'
         run: |
             git tag "v${VERSION}"
             git push origin "v${VERSION}"
+
+  deploy_docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: publish
+    if: always() && needs.publish.result == 'success' && needs.publish.outputs.is_stable == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check if documentation files exist
+        id: check_docs
+        run: |
+          if [ -f "mkdocs.yml" ] && [ -d "docs" ]; then
+            echo "Documentation files found"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Documentation files not found, skipping deployment"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Python
+        if: steps.check_docs.outputs.exists == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        if: steps.check_docs.outputs.exists == 'true'
+        run: pip install .[docs]
+
+      - name: Build documentation
+        if: steps.check_docs.outputs.exists == 'true'
+        run: mkdocs build --strict
+
+      - name: Upload artifact
+        if: steps.check_docs.outputs.exists == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+      - name: Deploy to GitHub Pages
+        if: steps.check_docs.outputs.exists == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
