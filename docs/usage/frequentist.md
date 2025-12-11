@@ -202,5 +202,5 @@ def test_with_potential_bug():
 
 - [Bayesian Testing](bayesian.md) - Incorporate prior knowledge
 - [Basic Testing](basic.md) - Simpler threshold approach
-- [Parameters Reference](reference/parameters.md) - Full parameter details
+- [Parameters Reference](../reference/parameters.md) - Full parameter details
 - [Decorator Placement](decorator-placement.md) - Using with other pytest markers

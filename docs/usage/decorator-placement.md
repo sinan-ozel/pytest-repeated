@@ -287,4 +287,4 @@ def expensive_setup():
 - [Basic Usage](basic.md) - Threshold-based testing
 - [Frequentist](frequentist.md) - Hypothesis testing approach
 - [Bayesian](bayesian.md) - Posterior probability approach
-- [Parameters Reference](reference/parameters.md) - All available parameters
+- [Parameters Reference](../reference/parameters.md) - All available parameters

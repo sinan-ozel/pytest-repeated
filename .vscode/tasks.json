@@ -38,6 +38,24 @@
         "kind": "test",
         "isDefault": true
       }
+    },
+    {
+      "label": "validate-docs",
+      "type": "shell",
+      "command": "mkdocs",
+      "args": [
+        "build",
+        "--strict"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
     }
   ]
 }

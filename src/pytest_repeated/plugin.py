@@ -14,7 +14,7 @@ def bayes_one_sided_proportion_test(
     prior_successes=1,
     prior_failures=1,
     posterior_threshold_probability=0.95,
-):
+) -> dict:
     """Perform a one-sided Bayesian test for a population proportion.
 
     Uses Beta-Binomial conjugate prior to compute posterior probability
@@ -52,7 +52,7 @@ def bayes_one_sided_proportion_test(
     }
 
 
-def one_sided_proportion_test(r, n, N, alpha=0.05):
+def one_sided_proportion_test(r, n, N, alpha=0.05) -> dict:
     """Perform a one-sided hypothesis test for a population proportion.
 
     Uses exact binomial test for small samples (N < 30 or N*r*(1-r) < 10),

@@ -343,5 +343,5 @@ Example with `success_rate_threshold=0.90, posterior_threshold_probability=0.95`
 
 - [Frequentist Testing](frequentist.md) - Null hypothesis approach without priors
 - [Basic Testing](basic.md) - Simple threshold approach
-- [Parameters Reference](reference/parameters.md) - Full parameter details
+- [Parameters Reference](../reference/parameters.md) - Full parameter details
 - [Decorator Placement](decorator-placement.md) - Using with other pytest markers

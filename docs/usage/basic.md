@@ -121,5 +121,5 @@ This ensures bugs aren't masked by statistical thresholds.
 
 - [Frequentist Testing](frequentist.md) - Add hypothesis testing rigor
 - [Bayesian Testing](bayesian.md) - Incorporate prior knowledge
-- [Parameters Reference](reference/parameters.md) - Full parameter details
+- [Parameters Reference](../reference/parameters.md) - Full parameter details
 - [Decorator Placement](decorator-placement.md) - Using with other pytest markers
