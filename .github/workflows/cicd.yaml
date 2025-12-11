@@ -164,35 +164,28 @@ jobs:
     name: Validate Documentation
     runs-on: ubuntu-latest
     outputs:
-      docs_exist: ${{ steps.check_docs.outputs.exists }}
+      docs_exist: ${{ steps.validate.outputs.exists }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Check if documentation files exist
-        id: check_docs
-        run: |
-          if [ -f "mkdocs.yml" ] && [ -d "docs" ]; then
-            echo "Documentation files found"
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Documentation files not found, skipping validation"
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Setup Python
-        if: steps.check_docs.outputs.exists == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        if: steps.check_docs.outputs.exists == 'true'
-        run: pip install .[docs]
-
-      - name: Build documentation
-        if: steps.check_docs.outputs.exists == 'true'
-        run: mkdocs build --strict
+      - name: Validate documentation
+        id: validate
+        run: |
+          if [ -f "mkdocs.yml" ] && [ -d "docs" ]; then
+            echo "Documentation files found, validating..."
+            echo "exists=true" >> $GITHUB_OUTPUT
+            pip install .[docs]
+            mkdocs build --strict
+          else
+            echo "Documentation files not found, skipping validation"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
   publish:
     name: Publish to PyPI
