@@ -1,7 +1,7 @@
 """Pytest-repeated plugin for running tests multiple times with
 threshold-based passing."""
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 
 from .plugin import (
     pytest_configure,
