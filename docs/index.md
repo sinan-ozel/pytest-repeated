@@ -49,7 +49,7 @@ import random
 @pytest.mark.repeated(times=20, threshold=19)
 def test_llm_output():
     response = call_llm("What is 2+2?")
-    assert "4" in response  # May occasionally fail due to LLM randomness
+    assert response.strip() == "4"  # May occasionally fail due to LLM randomness
 ```
 
 This test runs 20 times and passes if at least 19 iterations succeed.
