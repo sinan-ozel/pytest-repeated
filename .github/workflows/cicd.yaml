@@ -310,7 +310,7 @@ jobs:
     name: Deploy Documentation
     runs-on: ubuntu-latest
     needs: [publish, validate_docs]
-    if: always() && needs.publish.result == 'success' && needs.publish.outputs.is_stable == 'true' && needs.validate_docs.outputs.docs_exist == 'true'
+    if: github.ref == 'refs/heads/main' && needs.publish.result == 'success' && needs.publish.outputs.is_stable == 'true' && needs.validate_docs.outputs.docs_exist == 'true'
     permissions:
       contents: read
       pages: write
