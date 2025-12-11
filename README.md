@@ -2,6 +2,7 @@
 ![PyPI](https://img.shields.io/pypi/v/pytest-repeated.svg)
 ![Downloads](https://static.pepy.tech/badge/pytest-repeated)
 ![Monthly Downloads](https://static.pepy.tech/badge/pytest-repeated/month)
+[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue)](https://sinan-ozel.github.io/pytest-repeated/)
 ![License](https://img.shields.io/github/license/sinan-ozel/pytest-repeated.svg)
 
 # Introduction
