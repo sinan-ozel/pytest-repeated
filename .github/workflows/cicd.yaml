@@ -176,12 +176,31 @@ jobs:
 
       - name: Validate documentation
         id: validate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -f "mkdocs.yml" ] && [ -d "docs" ]; then
             echo "Documentation files found, validating..."
-            echo "exists=true" >> $GITHUB_OUTPUT
+
+            # Check if GitHub Pages is enabled
+            echo "Checking if GitHub Pages is enabled..."
+            if gh api repos/${{ github.repository }}/pages --silent 2>/dev/null; then
+              echo "GitHub Pages is enabled"
+            else
+              echo "::error::GitHub Pages is not enabled for this repository."
+              echo "::error::Enable it at: https://github.com/${{ github.repository }}/settings/pages"
+              exit 1
+            fi
+
+            # Build documentation
             pip install .[docs]
-            mkdocs build --strict
+            if mkdocs build --strict; then
+              echo "Documentation built successfully"
+              echo "exists=true" >> $GITHUB_OUTPUT
+            else
+              echo "Documentation build failed!"
+              exit 1
+            fi
           else
             echo "Documentation files not found, skipping validation"
             echo "exists=false" >> $GITHUB_OUTPUT
