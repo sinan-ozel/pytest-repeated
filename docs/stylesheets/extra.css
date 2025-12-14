@@ -1,0 +1,45 @@
+/* Custom styling for pytest-repeated documentation */
+
+/* Make code blocks stand out more */
+.highlight {
+  border-radius: 0.4rem;
+}
+
+/* Better spacing for admonitions */
+.admonition {
+  margin: 1.5625em 0;
+}
+
+/* Style for parameter tables */
+table {
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+table th {
+  background-color: var(--md-code-bg-color);
+  font-weight: 700;
+}
+
+/* Enhance inline code appearance */
+code {
+  padding: 0.1em 0.4em;
+  border-radius: 0.2rem;
+}
+
+/* Better visual hierarchy for headers */
+h2 {
+  margin-top: 2em;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  padding-bottom: 0.3em;
+}
+
+/* Improve list spacing */
+li {
+  margin: 0.5em 0;
+}
+
+/* Icon alignment in lists */
+.emoji {
+  vertical-align: middle;
+}
