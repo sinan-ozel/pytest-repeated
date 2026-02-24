@@ -68,6 +68,38 @@ times=10, threshold=10
 - `threshold` must be ≤ `times`
 - Setting `threshold=times` means all runs must pass (deterministic)
 
+### `stop_if_threshold_met`
+
+**Type**: `bool`
+**Required**: No
+**Default**: `False`
+**Compatible with**: Basic threshold approach only
+
+If `True`, stops running tests as soon as the threshold is met, potentially saving time.
+
+```python
+@pytest.mark.repeated(times=1000, threshold=10, stop_if_threshold_met=True)
+# Stops at 10 runs (when threshold is met)
+# Instead of running all 1000 times
+```
+
+**Examples**:
+```python
+# Early stopping enabled - stops at 5 passes
+@pytest.mark.repeated(times=100, threshold=5, stop_if_threshold_met=True)
+
+# Default behavior - runs all 100 times
+@pytest.mark.repeated(times=100, threshold=5)
+
+# Explicit default - runs all 100 times
+@pytest.mark.repeated(times=100, threshold=5, stop_if_threshold_met=False)
+```
+
+**Notes**:
+- Only compatible with threshold mode (not with `H0`/`null` or Bayesian parameters)
+- Useful for expensive tests where you want to stop early on success
+- Cannot be used with frequentist or Bayesian approaches (will raise `ValueError`)
+
 ---
 
 ## Frequentist Approach
