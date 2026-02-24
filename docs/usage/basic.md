@@ -117,6 +117,48 @@ def test_with_bug():
 
 This ensures bugs aren't masked by statistical thresholds.
 
+## Performance Optimization
+
+### Early Stopping with `stop_if_threshold_met`
+
+For expensive tests, you can stop execution as soon as the threshold is met:
+
+```python
+@pytest.mark.repeated(times=1000, threshold=10, stop_if_threshold_met=True)
+def test_expensive_operation():
+    """Stops at 10 passes instead of running all 1000 times."""
+    result = expensive_operation()
+    assert result.is_valid()
+```
+
+**When to use:**
+- Tests with expensive operations (API calls, model inference, database queries)
+- You only need to verify a minimum number of successes
+- Time/cost savings are important
+
+**Default behavior** (`stop_if_threshold_met=False`):
+- Runs all iterations to provide more information
+- Useful when you want to know the actual success rate, not just that threshold was met
+
+**Example comparison:**
+
+```python
+# Without early stopping - runs all 100 times
+@pytest.mark.repeated(times=100, threshold=5)
+def test_slow_api():
+    response = slow_api_call()
+    assert response.success
+
+# With early stopping - stops at 5 passes (much faster!)
+@pytest.mark.repeated(times=100, threshold=5, stop_if_threshold_met=True)
+def test_slow_api_optimized():
+    response = slow_api_call()
+    assert response.success
+```
+
+!!! note "Compatibility"
+    `stop_if_threshold_met` is **only compatible with threshold mode**. It cannot be used with frequentist (`H0`/`null`) or Bayesian (`posterior_threshold_probability`) approaches, as those require all runs to compute statistics accurately.
+
 ## Next Steps
 
 - [Frequentist Testing](frequentist.md) - Add hypothesis testing rigor

@@ -216,3 +216,32 @@ def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(
     # Note that the p-value is high, because we wound up getting only 61 samples.
     # TODO: Fix and change the sample size. The last test fails for a deterministic reason and does not count.
     assert "(p=0.848" in stdout or "(p=0.848" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_stop_if_threshold_met_incompatible_with_frequentist(
+    isolated_env, create_test_file_and_run
+):
+    """Test that stop_if_threshold_met raises error with frequentist mode."""
+    pytest_code = dedent(
+        """
+    import pytest
+    @pytest.mark.repeated(times=10, H0=0.5, stop_if_threshold_met=True)
+    def test_always_passes():
+        assert True
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    stderr = proc.stderr
+    print(stdout)
+    print("=" * 80)
+    print("STDERR:")
+    print(stderr)
+    print("=" * 80)
+    assert proc.returncode != 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + stderr
+    combined_output = stdout + stderr
+    assert "stop_if_threshold_met is only compatible with threshold mode" in combined_output, combined_output
+

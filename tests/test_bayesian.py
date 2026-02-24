@@ -130,3 +130,36 @@ def test_bayesian_test_with_alternative_prior_names(
     assert (
         "P(p>0.5|tests)=" in stdout or "P(p>0.5|tests)=" in proc.stderr
     ), stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_stop_if_threshold_met_incompatible_with_bayesian(
+    isolated_env, create_test_file_and_run
+):
+    """Test that stop_if_threshold_met raises error with Bayesian mode."""
+    pytest_code = dedent(
+        """
+    import pytest
+    @pytest.mark.repeated(
+        times=10,
+        posterior_threshold_probability=0.95,
+        success_rate_threshold=0.5,
+        stop_if_threshold_met=True
+    )
+    def test_always_passes():
+        assert True
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    stderr = proc.stderr
+    print(stdout)
+    print("=" * 80)
+    print("STDERR:")
+    print(stderr)
+    print("=" * 80)
+    assert proc.returncode != 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + stderr
+    combined_output = stdout + stderr
+    assert "stop_if_threshold_met is only compatible with threshold mode" in combined_output, combined_output

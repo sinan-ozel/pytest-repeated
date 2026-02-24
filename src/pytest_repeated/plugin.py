@@ -302,6 +302,7 @@ def pytest_runtest_call(item):
     posterior_threshold_probability = marker.kwargs.get(
         "posterior_threshold_probability"
     )
+    stop_if_threshold_met = marker.kwargs.get("stop_if_threshold_met", False)
 
     # Validate that at most one test method is specified
     test_methods = [threshold, null, posterior_threshold_probability]
@@ -315,6 +316,14 @@ def pytest_runtest_call(item):
     # Set default threshold if no test method specified
     if non_none_count == 0:
         threshold = 1
+
+    # Validate that stop_if_threshold_met is only used with threshold mode
+    if stop_if_threshold_met and (null is not None or posterior_threshold_probability is not None):
+        raise ValueError(
+            "stop_if_threshold_met is only compatible with threshold mode. "
+            "Either remove stop_if_threshold_met, or use only 'times' and 'threshold' parameters "
+            "(do not use 'null', 'H0', or 'posterior_threshold_probability')."
+        )
 
     # Determine actual times and n
     times, n = _resolve_times_and_n(times, n)
@@ -348,6 +357,9 @@ def pytest_runtest_call(item):
                 item.runtest()
                 passes += 1
                 run_details.append((i + 1, "PASS", None))
+                # Early exit if threshold met and stop_if_threshold_met is True
+                if stop_if_threshold_met and threshold is not None and passes >= threshold:
+                    break
             except Exception as e:
                 last_exception = e
                 run_details.append((i + 1, "FAIL", str(e)))
@@ -364,6 +376,9 @@ def pytest_runtest_call(item):
                 item.runtest()
                 passes += 1
                 run_details.append((i + 1, "PASS", None))
+                # Early exit if threshold met and stop_if_threshold_met is True
+                if stop_if_threshold_met and threshold is not None and passes >= threshold:
+                    break
             except Exception as e:
                 last_exception = e
                 run_details.append((i + 1, "FAIL", str(e)))

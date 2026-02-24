@@ -642,3 +642,113 @@ def test_assertion_error_run_by_run_output_at_verbosity_3(
     ), f"Expected full error message '{long_message}' in output"
     # The summary should still be present
     assert "0 out of 3 runs passed" in stdout or "(0/3)" in stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_stop_if_threshold_met_stops_early(
+    isolated_env, create_test_file_and_run
+):
+    """Test that stop_if_threshold_met=True stops execution once threshold is met."""
+    pytest_code = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=100, threshold=5, stop_if_threshold_met=True)
+    def test_always_passes():
+        call_count["count"] += 1
+        assert True
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should stop at exactly 5 runs (threshold met)
+    assert "PASSED (5/5)" in stdout or "PASSED (5/5)" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_stop_if_threshold_met_false_runs_all(
+    isolated_env, create_test_file_and_run
+):
+    """Test that stop_if_threshold_met=False (default) runs all trials."""
+    pytest_code = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=100, threshold=5, stop_if_threshold_met=False)
+    def test_always_passes():
+        call_count["count"] += 1
+        assert True
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should run all 100 times
+    assert "PASSED (100/100)" in stdout or "PASSED (100/100)" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_stop_if_threshold_met_default_runs_all(
+    isolated_env, create_test_file_and_run
+):
+    """Test that default behavior (no stop_if_threshold_met) runs all trials."""
+    pytest_code = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=50, threshold=3)
+    def test_always_passes():
+        call_count["count"] += 1
+        assert True
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should run all 50 times
+    assert "PASSED (50/50)" in stdout or "PASSED (50/50)" in proc.stderr, stdout
+
+
+@pytest.mark.depends(on=["test_repeated_marker_behavior"])
+def test_stop_if_threshold_met_with_flaky_test(
+    isolated_env, create_test_file_and_run
+):
+    """Test stop_if_threshold_met with a flaky test that eventually meets threshold."""
+    pytest_code = dedent(
+        """
+    import pytest
+    call_count = {"count": 0}
+    @pytest.mark.repeated(times=100, threshold=10, stop_if_threshold_met=True)
+    def test_flaky():
+        call_count["count"] += 1
+        # Passes every other time
+        assert call_count["count"] % 2 == 1
+    """
+    )
+
+    proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
+
+    stdout = proc.stdout
+    print(stdout)
+    assert proc.returncode == 0, (
+        "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
+    )
+    # Should stop at exactly 19 runs (10 passes, 9 fails)
+    assert "PASSED (10/19)" in stdout or "PASSED (10/19)" in proc.stderr, stdout
+
