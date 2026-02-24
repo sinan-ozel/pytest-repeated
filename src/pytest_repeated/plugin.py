@@ -318,7 +318,9 @@ def pytest_runtest_call(item):
         threshold = 1
 
     # Validate that stop_if_threshold_met is only used with threshold mode
-    if stop_if_threshold_met and (null is not None or posterior_threshold_probability is not None):
+    if stop_if_threshold_met and (
+        null is not None or posterior_threshold_probability is not None
+    ):
         raise ValueError(
             "stop_if_threshold_met is only compatible with threshold mode. "
             "Either remove stop_if_threshold_met, or use only 'times' and 'threshold' parameters "
@@ -358,7 +360,11 @@ def pytest_runtest_call(item):
                 passes += 1
                 run_details.append((i + 1, "PASS", None))
                 # Early exit if threshold met and stop_if_threshold_met is True
-                if stop_if_threshold_met and threshold is not None and passes >= threshold:
+                if (
+                    stop_if_threshold_met
+                    and threshold is not None
+                    and passes >= threshold
+                ):
                     break
             except Exception as e:
                 last_exception = e
@@ -377,7 +383,11 @@ def pytest_runtest_call(item):
                 passes += 1
                 run_details.append((i + 1, "PASS", None))
                 # Early exit if threshold met and stop_if_threshold_met is True
-                if stop_if_threshold_met and threshold is not None and passes >= threshold:
+                if (
+                    stop_if_threshold_met
+                    and threshold is not None
+                    and passes >= threshold
+                ):
                     break
             except Exception as e:
                 last_exception = e

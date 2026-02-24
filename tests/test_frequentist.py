@@ -7,14 +7,12 @@ import pytest
 @pytest.mark.depends(on=["base_repeated_marker_test"])
 def test_z_test(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with H0 parameter."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(H0=0.9, ci=0.95, times=3)
     def test_always_passes():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -33,14 +31,12 @@ def test_z_test(isolated_env, create_test_file_and_run):
 
 def test_threshold_pass_equal(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with H0 parameter."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(H0=0.9, ci=0.95, n=3)
     def test_always_passes():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -59,14 +55,12 @@ def test_threshold_pass_equal(isolated_env, create_test_file_and_run):
 
 def test_z_test_alternative_kwargs(isolated_env, create_test_file_and_run):
     """Test statistical hypothesis testing with H0 parameter using alternative kwarg names."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(null=0.9, ci=0.95, n=3)
     def test_always_passes():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -87,8 +81,7 @@ def test_z_test_statistical_fail_to_reject(
     isolated_env, create_test_file_and_run
 ):
     """Test statistical hypothesis testing with deterministic random seed."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     import random
 
@@ -97,8 +90,7 @@ def test_z_test_statistical_fail_to_reject(
     @pytest.mark.repeated(null=0.9, ci=0.95, n=10)
     def test_succeed_50_percent():
         assert random.random() < 0.5
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vv"])
 
@@ -119,8 +111,7 @@ def test_z_test_statistical_reject_and_pass(
     isolated_env, create_test_file_and_run
 ):
     """Test statistical hypothesis testing with deterministic random seed."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     import random
 
@@ -129,8 +120,7 @@ def test_z_test_statistical_reject_and_pass(
     @pytest.mark.repeated(null=0.9, ci=0.95, n=200)
     def test_succeed_95_percent():
         assert random.random() < 0.95
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -151,8 +141,7 @@ def test_z_test_statistical_reject_with_type2_error(
     isolated_env, create_test_file_and_run
 ):
     """Test statistical hypothesis testing with deterministic random seed."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     import random
 
@@ -161,8 +150,7 @@ def test_z_test_statistical_reject_with_type2_error(
     @pytest.mark.repeated(null=0.9, ci=0.95, n=150)
     def test_succeed_95_percent():
         assert random.random() < 0.95
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -183,8 +171,7 @@ def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(
     isolated_env, create_test_file_and_run
 ):
     """Test statistical hypothesis testing with deterministic random seed."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     import random
 
@@ -198,8 +185,7 @@ def test_z_test_statistical_determinsitic_fail_in_otherwise_successful_case(
         if call_count["count"] > 60:
             raise RuntimeError("Deliberate RuntimeError after 60 runs")
         assert random.random() < 0.95
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -223,14 +209,12 @@ def test_stop_if_threshold_met_incompatible_with_frequentist(
     isolated_env, create_test_file_and_run
 ):
     """Test that stop_if_threshold_met raises error with frequentist mode."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(times=10, H0=0.5, stop_if_threshold_met=True)
     def test_always_passes():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -243,5 +227,7 @@ def test_stop_if_threshold_met_incompatible_with_frequentist(
     print("=" * 80)
     assert proc.returncode != 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + stderr
     combined_output = stdout + stderr
-    assert "stop_if_threshold_met is only compatible with threshold mode" in combined_output, combined_output
-
+    assert (
+        "stop_if_threshold_met is only compatible with threshold mode"
+        in combined_output
+    ), combined_output

@@ -6,15 +6,13 @@ import pytest
 
 @pytest.mark.depends(name="base_repeated_marker_test")
 def test_repeated_marker_behavior(isolated_env, create_test_file_and_run):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(times=5, threshold=2)
     def test_flaky():
         import random
         return random.choice([True, False])
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -27,16 +25,14 @@ def test_repeated_marker_behavior(isolated_env, create_test_file_and_run):
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
 def test_threshold_pass_equal(isolated_env, create_test_file_and_run):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=2)
     def test_flaky():
         call_count["count"] += 1
         assert call_count["count"] > 3
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -49,16 +45,14 @@ def test_threshold_pass_equal(isolated_env, create_test_file_and_run):
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
 def test_threshold_pass_gt(isolated_env, create_test_file_and_run):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=2)
     def test_flaky():
         call_count["count"] += 1
         assert call_count["count"] > 2
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -71,16 +65,14 @@ def test_threshold_pass_gt(isolated_env, create_test_file_and_run):
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
 def test_threshold_fail(isolated_env, create_test_file_and_run):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=2)
     def test_flaky():
         call_count["count"] += 1
         assert call_count["count"] > 4
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -96,8 +88,7 @@ def test_threshold_met_with_final_failure(
     isolated_env, create_test_file_and_run
 ):
     """Test that threshold met results in PASSED even if last run fails."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=2)
@@ -105,8 +96,7 @@ def test_threshold_met_with_final_failure(
         call_count["count"] += 1
         # Passes on runs 1 and 3, fails on runs 2, 4, 5
         assert call_count["count"] in [1, 3]
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -120,15 +110,13 @@ def test_threshold_met_with_final_failure(
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
 def test_threshold_0_pass(isolated_env, create_test_file_and_run):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=0)
     def test_failing():
         assert False
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -143,8 +131,7 @@ def test_threshold_0_pass(isolated_env, create_test_file_and_run):
 def test_threshold_pass_with_verbosity_level_1_threshold_fail(
     isolated_env, create_test_file_and_run
 ):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=4)
@@ -152,8 +139,7 @@ def test_threshold_pass_with_verbosity_level_1_threshold_fail(
         call_count["count"] += 1
         # Passes on runs 1 and 3, fails on runs 2, 4, 5
         assert call_count["count"] in [1, 3]
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -169,8 +155,7 @@ def test_threshold_pass_with_verbosity_level_1_threshold_fail(
 def test_threshold_pass_with_verbosity_level_1_threshold_pass(
     isolated_env, create_test_file_and_run
 ):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=2)
@@ -178,8 +163,7 @@ def test_threshold_pass_with_verbosity_level_1_threshold_pass(
         call_count["count"] += 1
         # Passes on runs 1 and 3, fails on runs 2, 4, 5
         assert call_count["count"] in [1, 3]
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -195,15 +179,13 @@ def test_threshold_pass_with_verbosity_level_1_threshold_pass(
 def test_threshold_pass_with_verbosity_level_1_full_pass(
     isolated_env, create_test_file_and_run
 ):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
 
     @pytest.mark.repeated(times=5, threshold=2)
     def test_always_pass():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -220,8 +202,7 @@ def test_threshold_pass_with_verbosity_level_1_full_pass(
 def test_threshold_pass_with_verbosity_level_2(
     isolated_env, create_test_file_and_run
 ):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=2)
@@ -229,8 +210,7 @@ def test_threshold_pass_with_verbosity_level_2(
         call_count["count"] += 1
         # Passes on runs 1 and 3, fails on runs 2, 4, 5
         assert call_count["count"] in [1, 3]
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vv"])
 
@@ -246,8 +226,7 @@ def test_threshold_pass_with_verbosity_level_2(
 def test_threshold_pass_with_verbosity_level_3(
     isolated_env, create_test_file_and_run
 ):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=2)
@@ -255,8 +234,7 @@ def test_threshold_pass_with_verbosity_level_3(
         call_count["count"] += 1
         # Passes on runs 1 and 3, fails on runs 2, 4, 5
         assert call_count["count"] in [1, 3]
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
@@ -275,8 +253,7 @@ def test_threshold_pass_with_verbosity_level_3(
 def test_threshold_fail_with_verbosity_level_3(
     isolated_env, create_test_file_and_run
 ):
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=4)
@@ -284,8 +261,7 @@ def test_threshold_fail_with_verbosity_level_3(
         call_count["count"] += 1
         # Passes on runs 1 and 3, fails on runs 2, 4, 5
         assert call_count["count"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
@@ -309,8 +285,7 @@ def test_fail_with_error_verbosity_level_3(
     isolated_env, create_test_file_and_run
 ):
     """Test that KeyError details are shown in run-by-run output."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=4)
@@ -318,8 +293,7 @@ def test_fail_with_error_verbosity_level_3(
         call_count["count"] += 1
         # Always fails with KeyError
         assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
@@ -349,8 +323,7 @@ def test_deterministic_fail_with_error_after_first_test(
     isolated_env, create_test_file_and_run
 ):
     """Test that non-AssertionError exceptions stop execution after first run."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=4)
@@ -359,8 +332,7 @@ def test_deterministic_fail_with_error_after_first_test(
         print(f"CALL_COUNT={call_count['count']}")
         # Always fails with KeyError
         assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
@@ -395,8 +367,7 @@ def test_deterministic_fail_with_error_verbosity_level_2(
     isolated_env, create_test_file_and_run
 ):
     """Test that KeyError details are shown in run-by-run output."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=4)
@@ -404,8 +375,7 @@ def test_deterministic_fail_with_error_verbosity_level_2(
         call_count["count"] += 1
         # Always fails with KeyError
         assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vv"])
 
@@ -423,8 +393,7 @@ def test_deterministic_fail_with_error_verbosity_level_1(
     isolated_env, create_test_file_and_run
 ):
     """Test that KeyError details are shown in run-by-run output."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=4)
@@ -432,8 +401,7 @@ def test_deterministic_fail_with_error_verbosity_level_1(
         call_count["count"] += 1
         # Always fails with KeyError
         assert call_count["incorrect_key"] in [1, 3], f'Expected: {1, 3}, Got: {call_count["count"]}'
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -451,8 +419,7 @@ def test_deterministic_fail_with_runtime_error_after_success(
     isolated_env, create_test_file_and_run
 ):
     """Test errors other than AssertionError cause failure even after some tries."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=1)
@@ -462,8 +429,7 @@ def test_deterministic_fail_with_runtime_error_after_success(
         if call_count["count"] > 2:
             raise RuntimeError("Deliberate RuntimeError after two runs")
         assert call_count["count"] in [1, 2], f'Expected: {1, 2}, Got: {call_count["count"]}'
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -481,8 +447,7 @@ def test_deterministic_fail_with_runtime_error_after_success_v2(
     isolated_env, create_test_file_and_run
 ):
     """Test errors other than AssertionError cause failure even after some tries."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=5, threshold=1)
@@ -492,8 +457,7 @@ def test_deterministic_fail_with_runtime_error_after_success_v2(
         if call_count["count"] > 2:
             raise RuntimeError("Deliberate RuntimeError after two runs")
         assert call_count["count"] in [1, 2], f'Expected: {1, 2}, Got: {call_count["count"]}'
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -513,14 +477,12 @@ def test_long_error_message_not_truncated_at_verbosity_3(
     """Test that long error messages are NOT truncated at verbosity level 3 (-vvv)."""
     # Create a very long error message (over 100 characters)
     long_message = "A" * 150
-    pytest_code = dedent(
-        f"""
+    pytest_code = dedent(f"""
     import pytest
     @pytest.mark.repeated(times=2, threshold=2)
     def test_with_long_error():
         raise ValueError("{long_message}")
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
@@ -548,14 +510,12 @@ def test_no_run_by_run_output_at_verbosity_2(
     """Test that run-by-run results are NOT shown at verbosity level 2 (-vv)."""
     # Create a long error message
     long_message = "B" * 150
-    pytest_code = dedent(
-        f"""
+    pytest_code = dedent(f"""
     import pytest
     @pytest.mark.repeated(times=3, threshold=3)
     def test_with_long_error():
         raise ValueError("{long_message}")
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vv"])
 
@@ -580,14 +540,12 @@ def test_run_by_run_output_at_verbosity_3(
     """Test that run-by-run results are shown at verbosity level 3 (-vvv)."""
     # Create a long error message
     long_message = "B" * 150
-    pytest_code = dedent(
-        f"""
+    pytest_code = dedent(f"""
     import pytest
     @pytest.mark.repeated(times=3, threshold=0)
     def test_with_long_error():
         raise ValueError("{long_message}")
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
@@ -614,14 +572,12 @@ def test_assertion_error_run_by_run_output_at_verbosity_3(
     """Test that run-by-run results are shown at verbosity level 3 (-vvv)."""
     # Create a long error message
     long_message = "C" * 150
-    pytest_code = dedent(
-        f"""
+    pytest_code = dedent(f"""
     import pytest
     @pytest.mark.repeated(times=3, threshold=0)
     def test_with_long_error():
         assert False, "{long_message}"
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-vvv"])
 
@@ -649,16 +605,14 @@ def test_stop_if_threshold_met_stops_early(
     isolated_env, create_test_file_and_run
 ):
     """Test that stop_if_threshold_met=True stops execution once threshold is met."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=100, threshold=5, stop_if_threshold_met=True)
     def test_always_passes():
         call_count["count"] += 1
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -676,16 +630,14 @@ def test_stop_if_threshold_met_false_runs_all(
     isolated_env, create_test_file_and_run
 ):
     """Test that stop_if_threshold_met=False (default) runs all trials."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=100, threshold=5, stop_if_threshold_met=False)
     def test_always_passes():
         call_count["count"] += 1
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -695,7 +647,9 @@ def test_stop_if_threshold_met_false_runs_all(
         "STDOUT:\n" + stdout + "\nSTDERR:\n" + proc.stderr
     )
     # Should run all 100 times
-    assert "PASSED (100/100)" in stdout or "PASSED (100/100)" in proc.stderr, stdout
+    assert (
+        "PASSED (100/100)" in stdout or "PASSED (100/100)" in proc.stderr
+    ), stdout
 
 
 @pytest.mark.depends(on=["test_repeated_marker_behavior"])
@@ -703,16 +657,14 @@ def test_stop_if_threshold_met_default_runs_all(
     isolated_env, create_test_file_and_run
 ):
     """Test that default behavior (no stop_if_threshold_met) runs all trials."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=50, threshold=3)
     def test_always_passes():
         call_count["count"] += 1
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -730,8 +682,7 @@ def test_stop_if_threshold_met_with_flaky_test(
     isolated_env, create_test_file_and_run
 ):
     """Test stop_if_threshold_met with a flaky test that eventually meets threshold."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     call_count = {"count": 0}
     @pytest.mark.repeated(times=100, threshold=10, stop_if_threshold_met=True)
@@ -739,8 +690,7 @@ def test_stop_if_threshold_met_with_flaky_test(
         call_count["count"] += 1
         # Passes every other time
         assert call_count["count"] % 2 == 1
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -751,4 +701,3 @@ def test_stop_if_threshold_met_with_flaky_test(
     )
     # Should stop at exactly 19 runs (10 passes, 9 fails)
     assert "PASSED (10/19)" in stdout or "PASSED (10/19)" in proc.stderr, stdout
-

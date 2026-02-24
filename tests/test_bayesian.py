@@ -7,14 +7,12 @@ import pytest
 @pytest.mark.depends(on=["base_repeated_marker_test"])
 def test_bayesian_test(isolated_env, create_test_file_and_run):
     """Test Bayesian hypothesis testing with posterior_threshold_probability parameter."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(times=10, posterior_threshold_probability=0.95, success_rate_threshold=0.7)
     def test_always_passes():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -36,14 +34,12 @@ def test_bayesian_test_missing_kwarg_success_rate_threshold(
     isolated_env, create_test_file_and_run
 ):
     """Test that Bayesian testing raises error when success_rate_threshold is missing."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(times=10, posterior_threshold_probability=0.95)
     def test_always_passes():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -69,8 +65,7 @@ def test_bayesian_test_with_custom_prior(
     isolated_env, create_test_file_and_run
 ):
     """Test Bayesian hypothesis testing with custom prior parameters."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(
         times=5,
@@ -83,8 +78,7 @@ def test_bayesian_test_with_custom_prior(
         import random
         random.seed(42)
         assert random.random() < 0.6
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -103,8 +97,7 @@ def test_bayesian_test_with_alternative_prior_names(
     isolated_env, create_test_file_and_run
 ):
     """Test Bayesian hypothesis testing with prior_passes and prior_failures."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(
         times=10,
@@ -115,8 +108,7 @@ def test_bayesian_test_with_alternative_prior_names(
     )
     def test_always_passes():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code)
 
@@ -137,8 +129,7 @@ def test_stop_if_threshold_met_incompatible_with_bayesian(
     isolated_env, create_test_file_and_run
 ):
     """Test that stop_if_threshold_met raises error with Bayesian mode."""
-    pytest_code = dedent(
-        """
+    pytest_code = dedent("""
     import pytest
     @pytest.mark.repeated(
         times=10,
@@ -148,8 +139,7 @@ def test_stop_if_threshold_met_incompatible_with_bayesian(
     )
     def test_always_passes():
         assert True
-    """
-    )
+    """)
 
     proc = create_test_file_and_run(isolated_env, pytest_code, ["-v"])
 
@@ -162,4 +152,7 @@ def test_stop_if_threshold_met_incompatible_with_bayesian(
     print("=" * 80)
     assert proc.returncode != 0, "STDOUT:\n" + stdout + "\nSTDERR:\n" + stderr
     combined_output = stdout + stderr
-    assert "stop_if_threshold_met is only compatible with threshold mode" in combined_output, combined_output
+    assert (
+        "stop_if_threshold_met is only compatible with threshold mode"
+        in combined_output
+    ), combined_output
